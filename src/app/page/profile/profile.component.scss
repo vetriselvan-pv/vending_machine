@@ -1,0 +1,32 @@
+.name-text {
+  display: flex; 
+  height: 30%;
+  width: 100%; 
+}
+.circle {
+  width: 11.25rem;
+  height: 11.25rem;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #ffffff;
+ 
+    h1 { 
+      font-weight: 600; 
+      font-size: 7rem;
+    } 
+}
+
+ion-card {
+  box-shadow: none;
+  background: none;
+}
+
+ion-grid{
+  --ion-grid-column-padding : 0.6rem;
+}
+ 
+ion-content {
+  --background: var(--ion-red-background-color);
+}

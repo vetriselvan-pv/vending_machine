@@ -1,0 +1,33 @@
+<ion-content class="ion-padding dashboard" fullscreen="true"> 
+    <ion-grid  class="header-card ion-padding ">
+      <ion-row class="ion-align-items-stretch">
+        <ion-col size="8">
+          <ion-text color="secondary" class="ion-text-start">
+            <h1>Welcome vetri!</h1>
+            <h5>Good morning!</h5>
+          </ion-text>
+        </ion-col>
+        <ion-col size="4">
+          <ion-img src="assets/image/logo.svg"></ion-img>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col  size="12">
+           <ion-text class="ion-text-end" color="secondary">
+             <h6>TCS Navallur, Chennai</h6>
+           </ion-text>
+        </ion-col>
+      </ion-row> 
+      <ion-row >
+        <ion-col size="6">
+          <ion-button id="punch-in"  color="secondary" class="shadow-box" fill="outline" expand="block" >Punch in</ion-button>
+        </ion-col>
+        <ion-col size="6" class="ion-text-end">
+          <ion-button id="punch-out" color="secondary" class="shadow-box" fill="outline"  expand="block" >Punch out</ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid> 
+  <ion-card class="ion-padding content-card">
+    <ion-datetime presentation="date"></ion-datetime>
+  </ion-card>
+</ion-content>

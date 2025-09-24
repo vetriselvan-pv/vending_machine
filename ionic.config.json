@@ -1,0 +1,7 @@
+{
+  "name": "warehouse-management",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}

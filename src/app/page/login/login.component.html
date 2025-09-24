@@ -1,0 +1,81 @@
+<ion-content fullscreen="true">
+  <ion-thumbnail>
+    <ion-img src="assets/image/logo.svg"></ion-img>
+  </ion-thumbnail>
+  <ion-card >
+    <form [formGroup]="loginForm">
+      <ion-grid>
+        <ion-row>
+          <ion-col>
+            <ion-item lines="none" class="border-item">
+              <ion-button slot="start" fill="none" color="medium">
+                <ion-icon
+                  slot="icon-only"
+                  size="medium"
+                  name="person-outline"
+                ></ion-icon>
+              </ion-button>
+              <ion-input
+                formControlName="username"
+                errorText="Username is required"
+                type="text"
+                placeholder="Username"
+                fill="fill"
+              >
+                <!-- <div slot="label">Username <ion-text color="danger">*</ion-text></div> -->
+              </ion-input>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col>
+            <ion-item class="border-item" lines="none">
+              <ion-button slot="start" fill="none" color="medium">
+                <ion-icon
+                  slot="icon-only"
+                  size="medium"
+                  name="key-outline"
+                ></ion-icon>
+              </ion-button>
+              <ion-input
+                formControlName="password"
+                errorText="Password is required"
+                type="password"
+                placeholder="Password"
+              >
+                <!-- <div slot="label">Password <ion-text color="danger">*</ion-text></div> -->
+              </ion-input>
+              <ion-button slot="end" fill="none" color="medium">
+                <ion-icon
+                  slot="icon-only"
+                  size="medium"
+                  name="eye-outline"
+                ></ion-icon>
+              </ion-button>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col>
+            <ion-button
+              type="submit"
+              expand="block"
+              size="large"
+              color="primary"
+              (click)="login()"
+            >
+              <ion-text><strong>Login</strong></ion-text>
+            </ion-button>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col>
+            <div class="ion-text-center ion-margin-horizontal">
+              <ion-text color="primary"> Forgot Password </ion-text>
+            </div>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </form>
+  </ion-card>
+</ion-content>

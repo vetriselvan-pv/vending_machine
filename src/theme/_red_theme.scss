@@ -1,0 +1,54 @@
+  :root {
+  --ion-color-primary: #fa003f;
+  --ion-color-primary-rgb: 250, 0, 63;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #d80037;
+  --ion-color-primary-tint: #fb1a52;
+  --ion-red-background-color: linear-gradient(135deg, #fa003f, #0f2027);
+  --ion-box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25),
+    0 0 20px rgba(250, 0, 63, 0.4);
+
+  --ion-color-secondary: #ffffff;
+  --ion-color-secondary-rgb: 255, 255, 255;
+  --ion-color-secondary-contrast: #e0e0e0;
+  --ion-color-secondary-contrast-rgb: 0, 0, 0;
+  --ion-color-secondary-shade: #e0e0e0;
+  --ion-color-secondary-tint: #fa003f;
+
+  --primary-100: #ffe5ec;
+  --primary-200: #ffb8c7;
+  --primary-300: #ff8aa1;
+  --primary-400: #ff5c7c;
+  --primary-500: #fa003f; /* Base */
+  --primary-600: #d10037;
+  --primary-700: #a8002d;
+  --primary-800: #7f0023;
+  --primary-900: #560019;
+  --primary-950: #2b000c;
+
+  --ion-color-step-500: var(--primary-100);
+  --ion-color-step-650: var(--primary-100);
+}
+
+
+
+ion-grid {
+  background-color: var(--ion-red-background-color);
+}
+
+ion-card {
+  background-color: var(--ion-red-background-color);
+}
+
+ion-datetime {
+  background-color: var(--ion-red-background-color);
+  color: var(--ion-color-secondary);
+  font-size: 1rem !important;
+  font-weight: 900 !important;
+  box-shadow: var(--ion-box-shadow);
+}
+
+ion-tab-button{
+background-color: #621430;
+}
