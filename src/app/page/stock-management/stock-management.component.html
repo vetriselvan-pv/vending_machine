@@ -1,0 +1,77 @@
+<ion-content [fullscreen]="true" class="ion-padding">
+   <ion-title class="ion-text-center" color="primary">
+    Stock Management
+  </ion-title>
+  <form [formGroup]="stockManagementForm">
+      <ion-grid>
+        <ion-row>
+          <ion-col size="12">
+            <app-searchable-dropdown [itemIdField]="'id'" [placeholder]="'Select Stocks'" [label]="'Stock'"
+            [items]="stocksList" itemValueField="id" itemTextField="text">
+          </app-searchable-dropdown>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="12">
+            <app-text-box   [placeholder]="'Select Transfer To'" [label]="'Transfer To'"  itemValueField="id" itemTextField="text">
+          </app-text-box>
+          </ion-col>
+        </ion-row>
+         <ion-row class="ion-justify-content-end">
+        <ion-col size="4">
+          <ion-button (click)="addStock()"> Add stock </ion-button>
+        </ion-col>
+      </ion-row>
+      </ion-grid>
+          <div class="carousel">
+      @if(addedStocks() && addedStocks().length){ @for (stock of addedStocks();
+      track $index) {
+      <ion-card class="stock-card ion-padding">
+        <ion-grid>
+          <ion-row>
+            <ion-col>
+              <ion-text color="secondary"> Stocks :</ion-text>
+            </ion-col>
+            <ion-col>
+              <ion-text class="text-bold" color="primary">
+                {{ stock.stockName }}
+              </ion-text>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>
+              <ion-text color="secondary"> Quantity :</ion-text>
+            </ion-col>
+            <ion-col>
+              <ion-text class="text-bold" color="primary">
+                {{ stock.quantity }}
+              </ion-text>
+            </ion-col>
+          </ion-row>
+          <ion-row class="ion-align-items-end ion-margin-top">
+            <ion-col size="5">
+              <ion-button shape="round">
+                <ion-icon slot="icon-only" size="medium" name="pencil-outline"></ion-icon>
+              </ion-button>
+            </ion-col>
+            <ion-col size="5">
+              <ion-button shape="round">
+                <ion-icon slot="icon-only" size="medium" name="trash-outline"></ion-icon>
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card>
+      } } @else {
+      <ion-card class="ion-padding">
+        <ion-text class="ion-text-center">
+          No Stocks Added for Transfer
+        </ion-text>
+      </ion-card>
+      }
+    </div>
+    <ion-button type="submit" expand="block" size="large" color="primary" (click)="updateStock()">
+      <ion-text><strong>Update Stock</strong></ion-text>
+    </ion-button>
+  </form>
+</ion-content>

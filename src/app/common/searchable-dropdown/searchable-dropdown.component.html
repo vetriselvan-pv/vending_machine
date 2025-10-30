@@ -1,0 +1,26 @@
+<div #dropdownContainer class="searchable-dropdown">
+  <ion-label class=" d-block ion-margin">{{ label() }}</ion-label>
+  <!-- <ion-item class="border-item" tappable (click)="show()" lines="none"> -->
+  <ion-input tappable (click)="show()" type="text" class="form_field" [(ngModel)]="selectedText" fill="outline"
+    [placeholder]="placeholder()" (ionInput)="filterItems($event)" clearInput="true">
+  </ion-input>
+  <!-- </ion-item> -->
+
+  @if (isOpen()) {
+  <ion-list class="dropdown">
+    @if(filteredItems().length){
+    @for (item of filteredItems(); track $index) {
+    <ion-item lines="none" (click)="onSelect(item)">
+      <ion-label [color]="selectedValue===item[itemIdField()] ? 'primary' : 'secondary' " >{{ item[itemTextField()] }}</ion-label>
+    </ion-item>
+    }
+    }
+    @else {
+    <ion-item lines="none">
+      <ion-label>{{ 'No Data Found ' }}</ion-label>
+    </ion-item>
+    }
+
+  </ion-list>
+  }
+</div>

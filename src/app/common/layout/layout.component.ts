@@ -7,7 +7,7 @@ import {
   IonLabel,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { homeOutline, repeatOutline, personOutline } from 'ionicons/icons';
+import { homeOutline, repeatOutline, personOutline, restaurantOutline, duplicateOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-layout',
@@ -20,17 +20,27 @@ export class LayoutComponent implements OnInit {
     {
       name: 'Dashboard',
       icon: 'home-outline',
-      route: 'dashboard', 
+      route: 'dashboard',
+    },
+    {
+      name: 'Stock',
+      icon: 'restaurant-outline',
+      route: 'stocks',
     },
     {
       name: 'Transfer',
       icon: 'repeat-outline',
-      route: 'transfer', 
+      route: 'transfer',
+    },
+     {
+      name: 'Vendor',
+      icon: 'duplicate-outline',
+      route: 'vendor',
     },
     {
       name: 'Profile',
       icon: 'person-outline',
-      route: 'profile', 
+      route: 'profile',
     },
   ];
 
@@ -39,6 +49,8 @@ export class LayoutComponent implements OnInit {
       homeOutline,
       repeatOutline,
       personOutline,
+      restaurantOutline,
+      duplicateOutline
     });
   }
 

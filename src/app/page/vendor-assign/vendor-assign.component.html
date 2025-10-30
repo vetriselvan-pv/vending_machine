@@ -1,0 +1,60 @@
+<ion-content class="ion-padding d-flex ion-align-content-center ion-align-items-center" [fullscreen]="true">
+  <ion-title class="ion-text-center" color="primary">
+    Vendor Management
+  </ion-title>
+
+  <div class="ion-margin-top">
+    @if (vendorList() && vendorList().length) {
+    @for (vendor of vendorList(); track $index) {
+    <ion-item-sliding class="ion-margin-bottom border-bend">
+      <ion-item>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="6">
+              <ion-text>
+                Operator Name :
+              </ion-text>
+            </ion-col>
+            <ion-col size="6">
+              <ion-text>
+                {{ vendor.operatorName }}
+              </ion-text>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="6">
+              <ion-text>
+                Shop Name :
+              </ion-text>
+            </ion-col>
+            <ion-col size="6">
+              <ion-text>
+                {{ vendor.shopName }}
+              </ion-text>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-item>
+
+      <ion-item-options>
+        <ion-item-option  color="white" >
+                <ion-icon slot="icon-only" color="secondary" name="pencil-outline"></ion-icon>
+        </ion-item-option>
+        <ion-item-option  color="white" >
+          <ion-icon slot="icon-only" color="primary" name="trash"></ion-icon>
+        </ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>
+    }
+    }
+    @else {
+    <ion-card>
+      <ion-img [alt]="'no_data'" [src]="'./assets/icon/No_data.svg'"></ion-img>
+      <ion-text color="primary" class="ion-text-center">
+        <h3>No Vendor configured yet !!</h3>
+      </ion-text>
+    </ion-card>
+    }
+  </div>
+
+</ion-content>

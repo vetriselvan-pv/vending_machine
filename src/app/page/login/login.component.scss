@@ -1,34 +1,36 @@
-ion-content {
-  --background: #fff; 
-  ion-card {
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: none; 
-  }
-  ion-thumbnail {
-    --size: 120px; 
-  } 
- .border-item{
-  --inner-padding-end: 0; /* remove Ionic's default padding */
-  --inner-padding-start: 0;
-  --min-height: 48px; /* optional: keep height consistent */
-
-  border: 1px solid var(--ion-color-medium); /* border color */
-  border-radius: 8px; /* rounded corners */
-  padding: 4px 8px; /* spacing inside */
-  margin: 8px 0; /* spacing between rows */
+ form {
+ width: 100%;
  }
- ion-input {
-  --highlight-height: 0; /* no bottom line */
-  --border-width: 0;     /* ensure no default border */
+ion-thumbnail {
+  --size: 200px;
+  object-fit: fill;
+  -o-object-fit : fill;
 }
+
+ion-input {
+  --highlight-height: 0;
+  /* no bottom line */
+  --border-width: 0;
+  /* ensure no default border */
 }
+
 
 ion-content::part(scroll) {
   display: flex;
   flex-direction: column;
-  justify-content: center;  
-  align-items: center;  
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  scroll-behavior: smooth;
 }
 
- 
+
+ion-button{
+  border-radius: 4rem;
+  --border-radius: 4rem;
+}
+
+.logo{
+      object-fit: fill;
+    scale: 1.5;
+}

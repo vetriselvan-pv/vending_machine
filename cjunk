@@ -1,0 +1,72 @@
+<ion-item class="border-item" lines="none">
+  <ion-label position="floating">
+    {{
+    label()
+    }}
+  </ion-label>
+  <ion-searchbar [debounce]="1000" (ionInput)="filterItems($event)" show-clear-button="always"></ion-searchbar>
+  <ion-list>
+  @for (item of filteredItems(); track $index) {
+  <ion-item (click)="onSelect(item)">
+    <ion-label>
+      {{
+      item[itemTextField()]
+      }}
+    </ion-label>
+  </ion-item>
+  }
+  </ion-list>
+</ion-item>
+
+
+<!-- <ion-modal [isOpen]="isOpen()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-buttons slot="start">
+          <ion-button (click)="cancel()">
+            Cancel
+          </ion-button>
+        </ion-buttons>
+        <ion-title>
+          {{ title() }}
+        </ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+      <ion-searchbar [placeholder]="placeholder()"></ion-searchbar>
+      @for (item of filteredItems(); track $index) {
+      <ion-item (click)="onSelect(item)" >
+        <ion-label>
+          {{
+          item[itemTextField()]
+          }}
+        </ion-label>
+      </ion-item>
+      }
+    </ion-content>
+  </ng-template>
+</ion-modal> -->
+
+
+<!-- <ion-item class="border-item" lines="none">
+    <ion-label position="floating">
+      {{
+      label()
+      }}
+    </ion-label>
+    <ion-searchbar [debounce]="1000" (click)="show()" tappable (ionInput)="filterItems($event)" show-clear-button="always"></ion-searchbar>
+    <ion-modal [isOpen]="isOpen">
+    <ion-list>
+    @for (item of filteredItems(); track $index) {
+    <ion-item (click)="onSelect(item)">
+      <ion-label>
+        {{
+        item[itemTextField()]
+        }}
+      </ion-label>
+    </ion-item>
+    }
+    </ion-list>
+    </ion-modal>
+  </ion-item> -->

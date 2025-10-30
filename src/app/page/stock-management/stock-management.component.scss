@@ -1,0 +1,10 @@
+.carousel{
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  overflow: scroll;
+
+  .stock-card{
+    min-width: 250px;
+  }
+}

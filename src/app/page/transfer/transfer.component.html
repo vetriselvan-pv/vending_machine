@@ -1,3 +1,97 @@
-<p>
-  transfer works!
-</p>
+<ion-content fullscreen="true" class="ion-padding">
+  <ion-title class="ion-text-center" color="primary">
+    Transfer Stock
+  </ion-title>
+  <form [formGroup]="stockTransferForm">
+    <ion-grid>
+      <ion-row>
+        <ion-col size="12">
+          <app-searchable-dropdown [itemIdField]="'id'" [placeholder]="'Select Transfer From'" [label]="'Transfer From'"
+            [items]="transferFromArray" itemValueField="id" itemTextField="text">
+          </app-searchable-dropdown>
+        </ion-col>
+      </ion-row>
+      <ion-row class="ion-align-items-center ion-align-content-center ion-justify-content-center">
+        <!-- <ion-col size="12"> -->
+        <ion-icon color="primary" class="ion-text-center ion-margin-top" size="large"
+          name="git-compare-outline"></ion-icon>
+        <!-- </ion-col> -->
+      </ion-row>
+      <ion-row>
+        <ion-col size="12">
+          <app-searchable-dropdown [itemIdField]="'id'" [placeholder]="'Select Transfer To'" [label]="'Transfer To'"
+            [items]="transferFromArray" itemValueField="id" itemTextField="text">
+          </app-searchable-dropdown>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col size="12">
+          <app-searchable-dropdown [itemIdField]="'id'" [placeholder]="'Select the stocks'" [label]="'Stock Items'"
+            [items]="transferFromArray" itemValueField="id" itemTextField="text">
+          </app-searchable-dropdown>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col size="12">
+         <app-text-box [label]="'Quantity'" [placeholder]="'Enter the quantity'">
+         </app-text-box>
+        </ion-col>
+      </ion-row>
+      <ion-row class="ion-justify-content-end">
+        <ion-col size="4">
+          <ion-button (click)="addStock()"> Add stock </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+    <div class="carousel">
+      @if(addedStocks() && addedStocks().length){ @for (stock of addedStocks();
+      track $index) {
+      <ion-card class="stock-card ion-padding">
+        <ion-grid>
+          <ion-row>
+            <ion-col>
+              <ion-text color="secondary"> Stocks :</ion-text>
+            </ion-col>
+            <ion-col>
+              <ion-text class="text-bold" color="primary">
+                {{ stock.stockName }}
+              </ion-text>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>
+              <ion-text color="secondary"> Quantity :</ion-text>
+            </ion-col>
+            <ion-col>
+              <ion-text class="text-bold" color="primary">
+                {{ stock.quantity }}
+              </ion-text>
+            </ion-col>
+          </ion-row>
+          <ion-row class="ion-align-items-end ion-margin-top">
+            <ion-col size="5">
+              <ion-button shape="round">
+                <ion-icon slot="icon-only" size="medium" name="pencil-outline"></ion-icon>
+              </ion-button>
+            </ion-col>
+            <ion-col size="5">
+              <ion-button shape="round">
+                <ion-icon slot="icon-only" size="medium" name="trash-outline"></ion-icon>
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card>
+      } } @else {
+      <ion-card class="ion-padding">
+        <ion-text class="ion-text-center">
+          No Stocks Added for Transfer
+        </ion-text>
+      </ion-card>
+      }
+    </div>
+    <ion-button type="submit" expand="block" size="large" color="primary" (click)="onTransfer()">
+      <ion-text><strong>Transfer</strong></ion-text>
+    </ion-button>
+  </form>
+</ion-content>

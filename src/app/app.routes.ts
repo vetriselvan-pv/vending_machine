@@ -14,6 +14,14 @@ export const routes: Routes = [
         loadComponent: () => import('./page/transfer/transfer.component').then((m) => m.TransferComponent),
       },
       {
+        path: 'stocks',
+        loadComponent: () => import('./page/stock-management/stock-management.component').then((m) => m.StockManagementComponent),
+      },
+      {
+        path: 'vendor',
+        loadComponent: () => import('./page/vendor-assign/vendor-assign.component').then((m) => m.VendorAssignComponent),
+      },
+      {
         path: 'profile',
         loadComponent: () => import('./page/profile/profile.component').then((m) => m.ProfileComponent),
       },

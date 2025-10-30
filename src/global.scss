@@ -55,11 +55,6 @@ body {
   font-family: "noto-serif-regular", serif;
 }
 
-ion-content {
-  background: url(./assets/image/white-particle-lines-futuristic-gradient-background.jpg) no-repeat center center;
-  background-size: cover;
-}
-
 
 ::view-transition-old(root),
 ::view-transition-new(root) {
@@ -95,3 +90,25 @@ ion-content {
   from { transform: translateX(-100%); opacity: 0.5; }
   to { transform: translateX(0); opacity: 1; }
 }
+
+ion-button {
+  text-transform: none !important;
+}
+
+.border-item {
+  --inner-padding-end: 0;
+  /* remove Ionic's default padding */
+  --inner-padding-start: 0;
+  --min-height: 48px;
+  /* optional: keep height consistent */
+
+  border: 1px solid var(--ion-color-medium);
+  /* border color */
+  border-radius: 4rem;
+  /* rounded corners */
+  // padding: 4px 8px;
+  /* spacing inside */
+  // margin: 8px 0;
+  /* spacing between rows */
+}
+

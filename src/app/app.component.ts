@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { NavigationStart, Router } from '@angular/router';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
+import { SplashScreen } from '@capacitor/splash-screen'
 
 @Component({
   selector: 'app-root',
@@ -28,5 +29,13 @@ export class AppComponent {
         }
       }
     });
+    this.showSplashScreen()
+  }
+
+  async showSplashScreen(){
+    await SplashScreen.show({
+      showDuration: 3000,
+      autoHide: true
+    })
   }
 }
