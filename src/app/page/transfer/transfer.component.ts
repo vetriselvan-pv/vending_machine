@@ -1,11 +1,32 @@
-import { JsonPipe } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { IonContent, IonTitle, IonIcon, IonGrid, IonRow, IonCol, IonInput, IonButton, IonLabel, IonCard , IonText} from '@ionic/angular/standalone';
+import { FormBuilder, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import {
+  IonContent,
+  IonRow,
+  IonCol,
+  IonTitle,
+  IonGrid,
+  IonButton,
+  IonCard,
+  IonCardContent,
+  IonText,
+  IonIcon,
+  IonLabel,
+  IonItem,
+  IonInput
+} from '@ionic/angular/standalone';
+import { CommonModule } from '@angular/common';
 import { addIcons } from 'ionicons';
+import { gitCompareOutline, trashOutline, addCircleOutline } from 'ionicons/icons';
 import { SearchableDropdownComponent } from 'src/app/common/searchable-dropdown/searchable-dropdown.component';
-import { gitCompareOutline, trashOutline, createOutline, pencilOutline } from 'ionicons/icons';
-import { TextBoxComponent } from 'src/app/common/text-box/text-box.component';
+
+interface TransferItem {
+  transferFrom: string;
+  transferTo: string;
+  stockItemId: string;
+  stockName: string;
+  quantity: number;
+}
 
 @Component({
   selector: 'app-transfer',
@@ -13,67 +34,171 @@ import { TextBoxComponent } from 'src/app/common/text-box/text-box.component';
   styleUrls: ['./transfer.component.scss'],
   imports: [
     IonContent,
-    IonTitle,
     ReactiveFormsModule,
-    IonContent,
-    SearchableDropdownComponent,
-    IonIcon,
-    IonGrid,
+    FormsModule,
+    CommonModule,
     IonRow,
     IonCol,
+    IonGrid,
+    SearchableDropdownComponent,
     IonButton,
     IonCard,
+    IonCardContent,
+    IonIcon,
     IonText,
-    TextBoxComponent
+    IonLabel,
+    IonItem,
+    IonInput,
   ],
 })
 export class TransferComponent implements OnInit {
   private _fb = inject(FormBuilder);
 
+  addedStocks = signal<TransferItem[]>([]);
+  selectedTransferFrom: any = null;
+  selectedTransferTo: any = null;
+  selectedStockItem: any = null;
+  quantity: number | null = null;
+
   transferFromArray = [
     {
-      id: 'TCS',
-      text: 'TCS navallur',
+      id: '1',
+      text: 'TCS Navallur',
     },
     {
-      id: 'Infosys',
-      text: 'Infosy Navallur',
+      id: '2',
+      text: 'Infosys Navallur',
     },
     {
-      id: 'TCS',
+      id: '3',
       text: 'TCS Kelambakkam',
     },
     {
-      id: 'Infosys',
-      text: 'Infosy Kelambakkam',
+      id: '4',
+      text: 'Infosys Kelambakkam',
     },
   ];
 
-  addedStocks = signal<any>([]);
+  transferToArray = [
+    {
+      id: '1',
+      text: 'TCS Navallur',
+    },
+    {
+      id: '2',
+      text: 'Infosys Navallur',
+    },
+    {
+      id: '3',
+      text: 'TCS Kelambakkam',
+    },
+    {
+      id: '4',
+      text: 'Infosys Kelambakkam',
+    },
+  ];
+
+  stockItemsArray = [
+    {
+      id: '1',
+      text: 'Tea',
+    },
+    {
+      id: '2',
+      text: 'Coffee',
+    },
+    {
+      id: '3',
+      text: 'Sugar',
+    },
+    {
+      id: '4',
+      text: 'Milk',
+    },
+    {
+      id: '5',
+      text: 'Water',
+    },
+  ];
 
   stockTransferForm = this._fb.nonNullable.group({
     transferFrom: [''],
   });
 
-  customPopoverOptions = {
-    cssClass: 'my-custom-popover', // Optional: for custom styling
-    showBackdrop: true,
-  };
-
   constructor() {
     addIcons({
       gitCompareOutline,
       trashOutline,
-      createOutline,
-      pencilOutline
+      addCircleOutline
     });
   }
 
   ngOnInit() {}
 
-  addStock(){
-    this.addedStocks.update((stock) => [...stock, { stockName : 'Tea / Coffee' , quantity : 100 }])
+  onTransferFromSelect(item: any) {
+    this.selectedTransferFrom = item;
   }
 
-  onTransfer(){}
+  onTransferToSelect(item: any) {
+    this.selectedTransferTo = item;
+  }
+
+  onStockItemSelect(item: any) {
+    this.selectedStockItem = item;
+  }
+
+  addStock() {
+    if (this.selectedTransferFrom && this.selectedTransferTo && this.selectedStockItem && this.quantity && this.quantity > 0) {
+      // Check if same transfer already exists
+      const existingIndex = this.addedStocks().findIndex(
+        stock => stock.transferFrom === this.selectedTransferFrom.text &&
+                 stock.transferTo === this.selectedTransferTo.text &&
+                 stock.stockItemId === this.selectedStockItem.id
+      );
+
+      if (existingIndex >= 0) {
+        // Update existing transfer
+        this.addedStocks.update(stocks => {
+          const updated = [...stocks];
+          updated[existingIndex] = {
+            transferFrom: this.selectedTransferFrom.text,
+            transferTo: this.selectedTransferTo.text,
+            stockItemId: this.selectedStockItem.id,
+            stockName: this.selectedStockItem.text,
+            quantity: this.quantity!
+          };
+          return updated;
+        });
+      } else {
+        // Add new transfer
+        this.addedStocks.update(stocks => [
+          ...stocks,
+          {
+            transferFrom: this.selectedTransferFrom.text,
+            transferTo: this.selectedTransferTo.text,
+            stockItemId: this.selectedStockItem.id,
+            stockName: this.selectedStockItem.text,
+            quantity: this.quantity!
+          }
+        ]);
+      }
+
+      // Reset form
+      this.selectedStockItem = null;
+      this.quantity = null;
+    }
+  }
+
+  removeStock(index: number) {
+    this.addedStocks.update(stocks => stocks.filter((_, i) => i !== index));
+  }
+
+  onTransfer() {
+    if (this.addedStocks().length > 0) {
+      // TODO: Submit to API
+      console.log('Saving transfer stocks:', this.addedStocks());
+      // Example: await this.http.post('/api/stocks/transfer', this.addedStocks());
+      alert('Stock transfer saved successfully!');
+    }
+  }
 }

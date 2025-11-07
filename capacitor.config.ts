@@ -9,7 +9,7 @@ const config: CapacitorConfig = {
       launchShowDuration: 0,
       launchAutoHide: true,
       launchFadeOutDuration: 3000,
-      backgroundColor: "#ffffffff",
+      backgroundColor: "#FF0000",
       androidSplashResourceName: "splash",
       androidScaleType: "CENTER_CROP",
       showSpinner: true,
@@ -21,6 +21,9 @@ const config: CapacitorConfig = {
       layoutName: "launch_screen",
       useDialog: true,
     },
+     CapacitorHttp: {
+      "enabled": true
+    }
   },
 };
 

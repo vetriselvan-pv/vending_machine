@@ -1,34 +1,29 @@
 import { Component, inject, OnInit } from '@angular/core';
 import {
   IonContent,
-  IonCard,
   IonItem,
   IonInput,
   IonButton,
   IonText,
   IonIcon,
   IonImg,
-  IonThumbnail,
-  IonGrid,
-  IonRow,
-  IonCol,
+  ToastController,
 } from '@ionic/angular/standalone';
-import {
-  FormGroup,
-  FormControl,
-  Validators,
-  FormBuilder,
-  ReactiveFormsModule,
-} from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import {
   personOutline,
+  personCircleOutline,
   lockClosedOutline,
-  keyOutline,
   eyeOffOutline,
   eyeOutline,
 } from 'ionicons/icons';
 import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { HttpRequest } from 'src/app/service/http-request/http-request';
+import { environment } from 'src/environments/environment';
+import { Preferences } from '@capacitor/preferences';
+import { UserDetails } from 'src/app/service/user-details/user-details';
 
 @Component({
   selector: 'app-login',
@@ -42,15 +37,18 @@ import { Router } from '@angular/router';
     ReactiveFormsModule,
     IonText,
     IonIcon,
-    IonThumbnail,
-    IonGrid,
-    IonRow,
-    IonCol,
+    IonImg,
+    CommonModule,
   ],
 })
 export class LoginComponent implements OnInit {
   private fb = inject(FormBuilder);
   private router = inject(Router);
+  private httpProvider = inject(HttpRequest);
+  private toastController = inject(ToastController);
+  protected userDetails = inject(UserDetails);
+
+  showPassword = false;
 
   loginForm = this.fb.nonNullable.group({
     username: ['', [Validators.required]],
@@ -60,7 +58,8 @@ export class LoginComponent implements OnInit {
   constructor() {
     addIcons({
       personOutline,
-      keyOutline,
+      personCircleOutline,
+      lockClosedOutline,
       eyeOffOutline,
       eyeOutline,
     });
@@ -68,9 +67,46 @@ export class LoginComponent implements OnInit {
 
   ngOnInit() {}
 
-  login() {
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword;
+  }
+
+  async login() {
     if (this.loginForm.valid) {
-      this.router.navigate(['/layout/dashboard']);
+      const url = environment.baseURL + environment.loginURL;
+      this.httpProvider.httpPostRequest(url, this.loginForm.value).subscribe({
+        next: async (res) => {
+          if (res?.data?.success) {
+            await Preferences.set({
+              key: 'user_details',
+              value: JSON.stringify(res.data.data.user.employee)
+            });
+            this.userDetails.userDetails.set(res.data.data.user.employee)
+            this.router.navigate(['/layout/dashboard']);
+          } else {
+            const toast = await this.toastController.create({
+              message: 'Login failed! Please Try again',
+              duration: 1500,
+              position: 'middle',
+              color: 'primary',
+            });
+            await toast.present();
+          }
+        },
+        error: async (err: any) => {
+          const toast = await this.toastController.create({
+            message: 'Login failed! Please Try again',
+            duration: 1500,
+            position: 'top',
+          });
+          await toast.present();
+        },
+      });
+    } else {
+      // Mark all fields as touched to show validation errors
+      Object.keys(this.loginForm.controls).forEach((key) => {
+        this.loginForm.get(key)?.markAsTouched();
+      });
     }
   }
 }

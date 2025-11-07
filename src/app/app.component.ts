@@ -1,7 +1,8 @@
 import { Component, inject } from '@angular/core';
 import { NavigationStart, Router } from '@angular/router';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
-import { SplashScreen } from '@capacitor/splash-screen'
+import { SplashScreen } from '@capacitor/splash-screen';
+import { IonHeader, IonButtons, IonButton, IonToolbar, IonIcon } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-root',
@@ -14,18 +15,29 @@ export class AppComponent {
   constructor() {
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationStart) {
-        // Check if the URL is already in our history
-        const isNavigatingBack = this.navigationHistory.includes(event.url);
-        // Add/remove classes on the root <html> element
-        document.documentElement.classList.toggle('back', isNavigatingBack);
-        document.documentElement.classList.toggle('forward', !isNavigatingBack);
-        if (!isNavigatingBack) {
-          // It's a forward navigation, so add to history
-          this.navigationHistory.push(event.url);
+        // Check if this is a tab navigation (within /layout routes)
+        const isTabNavigation = event.url.includes('/layout/');
+
+        if (isTabNavigation) {
+          // Tab navigation - use fade-in overlay
+          document.documentElement.classList.add('tab-navigation');
+          document.documentElement.classList.remove('back', 'forward');
         } else {
-          // It's a back navigation, so trim the history
-          const index = this.navigationHistory.indexOf(event.url);
-          this.navigationHistory = this.navigationHistory.slice(0, index + 1);
+          // Regular navigation - use slide animations
+          document.documentElement.classList.remove('tab-navigation');
+          // Check if the URL is already in our history
+          const isNavigatingBack = this.navigationHistory.includes(event.url);
+          // Add/remove classes on the root <html> element
+          document.documentElement.classList.toggle('back', isNavigatingBack);
+          document.documentElement.classList.toggle('forward', !isNavigatingBack);
+          if (!isNavigatingBack) {
+            // It's a forward navigation, so add to history
+            this.navigationHistory.push(event.url);
+          } else {
+            // It's a back navigation, so trim the history
+            const index = this.navigationHistory.indexOf(event.url);
+            this.navigationHistory = this.navigationHistory.slice(0, index + 1);
+          }
         }
       }
     });

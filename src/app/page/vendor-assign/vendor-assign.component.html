@@ -1,60 +1,107 @@
-<ion-content class="ion-padding d-flex ion-align-content-center ion-align-items-center" [fullscreen]="true">
-  <ion-title class="ion-text-center" color="primary">
-    Vendor Management
-  </ion-title>
+<ion-content [fullscreen]="true" class="customer-assign-content">
+  <!-- Camera Notch Overlay -->
+  <div class="camera-notch-overlay"></div>
 
-  <div class="ion-margin-top">
-    @if (vendorList() && vendorList().length) {
-    @for (vendor of vendorList(); track $index) {
-    <ion-item-sliding class="ion-margin-bottom border-bend">
-      <ion-item>
-        <ion-grid>
+  <!-- Assignment Form Section -->
+  <ion-card class="form-card">
+    <ion-card-content>
+      <form [formGroup]="assignmentForm">
+        <ion-grid class="form-grid">
+          <!-- Employee Selection -->
           <ion-row>
-            <ion-col size="6">
-              <ion-text>
-                Operator Name :
-              </ion-text>
-            </ion-col>
-            <ion-col size="6">
-              <ion-text>
-                {{ vendor.operatorName }}
-              </ion-text>
+            <ion-col size="12">
+              <app-searchable-dropdown 
+                [itemIdField]="'id'" 
+                [placeholder]="'Select Employee'" 
+                [label]="'Select Employee'"
+                [items]="employeesList" 
+                itemValueField="id" 
+                itemTextField="text"
+                (selectionChange)="onEmployeeSelect($event)">
+              </app-searchable-dropdown>
             </ion-col>
           </ion-row>
+
+          <!-- Customer Selection -->
           <ion-row>
-            <ion-col size="6">
-              <ion-text>
-                Shop Name :
-              </ion-text>
+            <ion-col size="12">
+              <app-searchable-dropdown 
+                [itemIdField]="'id'" 
+                [placeholder]="'Select Customer'" 
+                [label]="'Select Customer'"
+                [items]="customersList" 
+                itemValueField="id" 
+                itemTextField="text"
+                (selectionChange)="onCustomerSelect($event)">
+              </app-searchable-dropdown>
             </ion-col>
-            <ion-col size="6">
-              <ion-text>
-                {{ vendor.shopName }}
-              </ion-text>
+          </ion-row>
+
+          <!-- Assign Button -->
+          <ion-row>
+            <ion-col size="12">
+              <ion-button 
+                expand="block" 
+                class="assign-button"
+                (click)="assignEmployee()"
+                [disabled]="!selectedEmployee || !selectedCustomer">
+                <ion-icon slot="start" name="person-add-outline"></ion-icon>
+                Assign Employee to Customer
+              </ion-button>
             </ion-col>
           </ion-row>
         </ion-grid>
-      </ion-item>
+      </form>
+    </ion-card-content>
+  </ion-card>
 
-      <ion-item-options>
-        <ion-item-option  color="white" >
-                <ion-icon slot="icon-only" color="secondary" name="pencil-outline"></ion-icon>
-        </ion-item-option>
-        <ion-item-option  color="white" >
-          <ion-icon slot="icon-only" color="primary" name="trash"></ion-icon>
-        </ion-item-option>
-      </ion-item-options>
-    </ion-item-sliding>
-    }
-    }
-    @else {
-    <ion-card>
-      <ion-img [alt]="'no_data'" [src]="'./assets/icon/No_data.svg'"></ion-img>
-      <ion-text color="primary" class="ion-text-center">
-        <h3>No Vendor configured yet !!</h3>
-      </ion-text>
-    </ion-card>
-    }
-  </div>
+  <!-- Assigned Mappings List -->
+  <ion-card class="list-card">
+    <ion-card-content>
+      <div class="list-header">
+        <ion-text class="list-title">Assigned Mappings</ion-text>
+        <ion-text class="list-count">{{ assignments().length }} assignments</ion-text>
+      </div>
 
+      @if(assignments() && assignments().length) {
+        <div class="assignments-list">
+          @for (assignment of assignments(); track $index) {
+            <ion-card class="assignment-item-card">
+              <ion-card-content>
+                <ion-grid class="assignment-item-grid">
+                  <ion-row class="assignment-item-row">
+                    <ion-col size="8">
+                      <ion-text class="item-label">Employee</ion-text>
+                      <ion-text class="item-value">{{ assignment.employeeName }}</ion-text>
+                    </ion-col>
+                    <ion-col size="4" class="ion-text-end">
+                      <ion-button 
+                        fill="clear" 
+                        size="small"
+                        color="danger"
+                        (click)="deleteAssignment($index)">
+                        <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+                      </ion-button>
+                    </ion-col>
+                  </ion-row>
+                  <ion-row class="assignment-item-row">
+                    <ion-col size="12">
+                      <ion-text class="item-label">Customer</ion-text>
+                      <ion-text class="item-value customer-value">{{ assignment.customerName }}</ion-text>
+                    </ion-col>
+                  </ion-row>
+                </ion-grid>
+              </ion-card-content>
+            </ion-card>
+          }
+        </div>
+      } @else {
+        <ion-card class="empty-card">
+          <ion-card-content>
+            <ion-text class="empty-text">No assignments yet. Assign an employee to a customer to get started.</ion-text>
+          </ion-card-content>
+        </ion-card>
+      }
+    </ion-card-content>
+  </ion-card>
 </ion-content>

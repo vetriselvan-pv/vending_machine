@@ -1,52 +1,83 @@
-<ion-content fullscreen="true">
-  <ion-thumbnail>
-    <img class="logo" src="assets/image/logo.svg" />
-  </ion-thumbnail>
-    <form [formGroup]="loginForm">
-      <ion-grid>
-        <ion-row>
-          <ion-col>
-            <ion-item lines="none" class="border-item">
-              <ion-button slot="start" fill="none" color="medium">
-                <ion-icon slot="icon-only" size="medium" name="person-outline"></ion-icon>
-              </ion-button>
-              <ion-input formControlName="username" errorText="Username is required" type="text" placeholder="Username"
-                fill="fill">
-                <!-- <div slot="label">Username <ion-text color="danger">*</ion-text></div> -->
+<ion-content [fullscreen]="true" [scrollY]="false" class="login-content">
+  <!-- Top Section - Red Background with Logo -->
+  <div class="login-top-section">
+    <div class="logo-container">
+      <ion-img src="assets/image/eb-logo.svg" alt="EB Connect Logo" class="login-logo"></ion-img>
+    </div>
+
+    <!-- Wave Divider -->
+    <div class="wave-divider ">
+      <svg viewBox="0 0 1440 120" preserveAspectRatio="none" class="wave-svg animated-wave">
+        <path d="M0,64L48,69.3C96,75,192,85,288,85.3C384,85,480,75,576,64C672,53,768,43,864,48C960,53,1056,75,1152,80C1248,85,1344,75,1392,69.3L1440,64L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z" fill="#ffffff"></path>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Bottom Section - White Background with Form -->
+  <div class="login-bottom-section">
+    <div class="login-container">
+      <!-- Welcome Section -->
+      <div class="welcome-section">
+        <h1 class="welcome-title">Welcome to EB Connect</h1>
+      </div>
+
+      <!-- Login Form -->
+      <form [formGroup]="loginForm" class="login-form">
+        <div class="form-wrapper">
+          <!-- Username Field -->
+          <div class="input-wrapper">
+            <ion-item lines="none" class="input-item">
+              <ion-icon slot="start" name="person-outline" class="input-icon"></ion-icon>
+              <ion-input
+                formControlName="username"
+                type="text"
+                placeholder="Username"
+                autocomplete="username">
               </ion-input>
             </ion-item>
-          </ion-col>
-        </ion-row>
-        <ion-row>
-          <ion-col>
-            <ion-item class="border-item" lines="none">
-              <ion-button slot="start" fill="none" color="medium">
-                <ion-icon slot="icon-only" size="medium" name="key-outline"></ion-icon>
-              </ion-button>
-              <ion-input formControlName="password" errorText="Password is required" type="password"
-                placeholder="Password">
-                <!-- <div slot="label">Password <ion-text color="danger">*</ion-text></div> -->
-              </ion-input>
-              <ion-button slot="end" fill="none" color="medium">
-                <ion-icon slot="icon-only" size="medium" name="eye-outline"></ion-icon>
-              </ion-button>
-            </ion-item>
-          </ion-col>
-        </ion-row>
-        <ion-row>
-          <ion-col>
-            <ion-button type="submit" expand="block" size="large" color="primary" (click)="login()">
-              <ion-text><strong>Login</strong></ion-text>
-            </ion-button>
-          </ion-col>
-        </ion-row>
-        <ion-row>
-          <ion-col>
-            <div class="ion-text-center ion-margin-horizontal">
-              <ion-text color="primary"> Forgot Password </ion-text>
+            <div class="error-message" *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched">
+              Username is required
             </div>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
-    </form>
+          </div>
+
+          <!-- Password Field -->
+          <div class="input-wrapper">
+            <ion-item lines="none" class="input-item">
+              <ion-icon slot="start" name="lock-closed-outline" class="input-icon"></ion-icon>
+              <ion-input
+                formControlName="password"
+                [type]="showPassword ? 'text' : 'password'"
+                placeholder="Password"
+                autocomplete="current-password">
+              </ion-input>
+              <ion-button
+                slot="end"
+                fill="clear"
+                (click)="togglePasswordVisibility()"
+                class="password-toggle">
+                <ion-icon
+                  [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"
+                  class="toggle-icon">
+                </ion-icon>
+              </ion-button>
+            </ion-item>
+            <div class="error-message" *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+              Password is required
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <ion-button
+            type="submit"
+            expand="block"
+            size="large"
+            class="submit-button"
+            (click)="login()"
+            [disabled]="loginForm.invalid">
+            <ion-text><strong>Submit</strong></ion-text>
+          </ion-button>
+        </div>
+      </form>
+    </div>
+  </div>
 </ion-content>

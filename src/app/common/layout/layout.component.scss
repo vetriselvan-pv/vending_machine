@@ -1,6 +1,329 @@
+// .menu {
+//   height: 81px;
+//   border-width: 1px 0px 0px;
+//   border-radius: 8px;
+//   border: none;
+// }
+
+// // Animation Keyframes
+// @keyframes tabClick {
+//   0% {
+//     transform: scale(1);
+//   }
+
+//   50% {
+//     transform: scale(0.85);
+//   }
+
+//   100% {
+//     transform: scale(1);
+//   }
+// }
+
+// @keyframes tabPulse {
+//   0% {
+//     transform: scale(1);
+//   }
+
+//   50% {
+//     transform: scale(1.15);
+//   }
+
+//   100% {
+//     transform: scale(1);
+//   }
+// }
+
+// @keyframes iconBounce {
+
+//   0%,
+//   100% {
+//     transform: translateY(0);
+//   }
+
+//   50% {
+//     transform: translateY(-5px);
+//   }
+// }
+
+// // Tab Button Styling
+// ion-tab-button {
+//   cursor: pointer;
+//   position: relative;
+//   transition: all 0.3s ease;
+//   -webkit-tap-highlight-color: transparent;
+
+//   // Default (inactive) state - grey
+//   ion-icon,
+//   ion-label {
+//     color: #999999;
+//     transition: all 0.3s ease;
+//   }
+
+//   ion-icon {
+//     transition: transform 0.3s ease, color 0.3s ease;
+//   }
+
+//   // Active state - red (#FF0000)
+//   &.tab-selected {
+
+//     ion-icon,
+//     ion-label {
+//       color: #FF0000;
+//     }
+
+//     ion-icon {
+//       animation: tabPulse 0.4s ease;
+//     }
+//   }
+
+//   // Click/Press animation
+//   &:active {
+//     transform: scale(0.95);
+
+//     ion-icon {
+//       animation: tabClick 0.3s ease;
+//     }
+//   }
+
+//   // Hover state for better UX
+//   &:hover:not(.tab-selected) {
+
+//     ion-icon,
+//     ion-label {
+//       color: #666666;
+//     }
+
+//     ion-icon {
+//       transform: translateY(-2px);
+//     }
+//   }
+
+//   // Smooth icon animation when becoming active
+//   &.tab-selected ion-icon {
+//     transform: scale(1.1);
+//   }
+// }
+
+// // Ensure Ionic's default selected state uses our red color
+// ::ng-deep {
+//   ion-tab-button {
+
+//     // Click animation for all tab buttons
+//     &:active {
+//       ion-icon {
+//         animation: tabClick 0.3s ease !important;
+//       }
+//     }
+
+//     &.tab-selected {
+
+//       ion-icon,
+//       ion-label {
+//         color: #FF0000 !important;
+//       }
+
+//       ion-icon {
+//         animation: tabPulse 0.4s ease !important;
+//       }
+//     }
+//   }
+
+//   // Tab content fade-in overlay animation
+//   ion-tabs {
+//     ion-router-outlet {
+//       // Disable default Ionic slide transitions
+//       --transition: none !important;
+//     }
+
+//     // Fade-in animation for tab content
+//     ion-router-outlet>* {
+//       animation: fadeInTabContent 0.3s ease-in-out !important;
+//     }
+//   }
+// }
+
+// // Fade-in animation for tab content
+// @keyframes fadeInTabContent {
+//   from {
+//     opacity: 0;
+//   }
+
+//   to {
+//     opacity: 1;
+//   }
+// }
+
+// ion-header{
+//       box-shadow: none;
+// }
+
+// .menu-list {
+//   display: flex;
+//   flex-direction: column;
+//   align-items: flex-start;
+//   justify-content: flex-start;
+//     flex-direction: row;
+//     align-items: center;
+//     gap: 8px;
+//     justify-content: flex-start;
+//     width: 100%;
+//     padding: 16px;
+
+//   .menu-item {
+//     display: flex;
+//     flex-direction: row;
+//     align-items: center;
+//     gap: 8px;
+//     justify-content: flex-start;
+//     padding: 8px;
+//     width: 100%;
+
+//     .menu-icon{
+//       width: 24px;
+//       height: 24px;
+//     }
+//     .menu-text{
+//       font-size: 24px;
+//     }
+//   }
+
+// }
+
+// .logo-icon{
+//   width: 140px;
+//   height: 140px;
+// }
+
+// .d-flex-center{
+//   display: flex;
+//   justify-content: center;
+//   align-items: center;
+//   width: 100%;
+// }
+
+
+:host {
+  display: contents;
+}
+
+
+/* Drawer shape + drop shadow */
+.vm-menu {
+  --max-width: 320px;
+  --width: 86vw;
+  --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  border-top-right-radius: 24px;
+  border-bottom-right-radius: 24px;
+  overflow: hidden;
+}
+
+
+ion-content {
+  /* Red theme background */
+  // --background: linear-gradient(180deg, #d32f2f, #c62828 50%, #b71c1c);
+  // background: linear-gradient(180deg, #d32f2f, #c62828 50%, #b71c1c) !important;
+  --background: var(--primary-background-color);
+  background: var(--primary-background-color);
+  color: var(--ion-color-primary);
+}
+
 .menu {
-    height: 81px; 
-    border-width: 1px 0px 0px;
-    border-radius: 8px; 
-    border: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
+}
+
+
+/* Header */
+.vm-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.vm-avatar {
+  width: 56px;
+  height: 56px;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.vm-title h2 {
+  margin: 0;
+  font-weight: 700;
+}
+
+.vm-title p {
+  margin: 2px 0 0;
+  opacity: 0.8;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.vm-list {
+  flex: 1;
+  // --background: linear-gradient(180deg, #d32f2f, #c62828 50%, #b71c1c);
+  // background: linear-gradient(180deg, #d32f2f, #c62828 50%, #b71c1c);
+  --background: var(--primary-background-color);
+  background: var(--primary-background-color);
+  --color: var(--ion-color-primary)
+}
+
+
+/* List */
+.vm-list ion-item {
+  --background: transparent;
+  --color: #fff;
+  border-radius: 14px;
+  margin: 6px 12px;
+
+}
+
+.vm-list ion-item:hover,
+.vm-list ion-item.ion-focused {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.vm-list ion-icon {
+  font-size: 22px;
+  color: #fff;
+}
+
+.vm-list ion-badge {
+  border-radius: 10px;
+}
+
+
+/* Footer */
+.vm-footer {
+  margin-top: 8px;
+}
+
+.vm-footer ion-button {
+  --color: #fff;
+  --border-radius: 14px
+}
+
+
+/* Safe area padding */
+ion-content::part(scroll) {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: calc(env(safe-area-inset-bottom) + 8px);
+}
+
+.active-route {
+  background: var(--ion-color-primary);
+  color: #fff;
+  font-weight: 800;
+}
+
+.vm-toolbar {
+  .toolbar-title {
+    left: calc(50% - 85px);
+    position: relative;
+  }
 }

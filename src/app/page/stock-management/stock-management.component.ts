@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import {
   IonContent,
   IonRow,
@@ -8,13 +8,23 @@ import {
   IonGrid,
   IonButton,
   IonCard,
+  IonCardContent,
   IonText,
-  IonIcon
+  IonIcon,
+  IonLabel,
+  IonItem,
+  IonInput
 } from '@ionic/angular/standalone';
+import { CommonModule } from '@angular/common';
 import { addIcons } from 'ionicons';
-import { createOutline, gitCompareOutline, pencilOutline, trashOutline } from 'ionicons/icons';
+import { addCircleOutline, trashOutline } from 'ionicons/icons';
 import { SearchableDropdownComponent } from 'src/app/common/searchable-dropdown/searchable-dropdown.component';
-import { TextBoxComponent } from 'src/app/common/text-box/text-box.component';
+
+interface StockItem {
+  productId: string;
+  productName: string;
+  closingStock: number;
+}
 
 @Component({
   selector: 'app-stock-management',
@@ -23,58 +33,118 @@ import { TextBoxComponent } from 'src/app/common/text-box/text-box.component';
   imports: [
     IonContent,
     ReactiveFormsModule,
+    FormsModule,
+    CommonModule,
     IonRow,
     IonCol,
     IonGrid,
     SearchableDropdownComponent,
-    TextBoxComponent,
     IonButton,
-    IonTitle,
     IonCard,
+    IonCardContent,
     IonIcon,
     IonText,
+    IonLabel,
+    IonItem,
+    IonInput,
   ],
 })
 export class StockManagementComponent implements OnInit {
   private _fb = inject(FormBuilder);
 
-    addedStocks = signal<any>([]);
+  addedStocks = signal<StockItem[]>([]);
+  selectedProduct: any = null;
+  closingStock: number | null = null;
+  machineReading: string = '';
 
   stocksList = [
     {
-      id: 'Tea',
+      id: '1',
       text: 'Tea',
     },
     {
-      id: 'Coffee',
+      id: '2',
       text: 'Coffee',
     },
     {
-      id: 'Sugar',
+      id: '3',
       text: 'Sugar',
     },
     {
-      id: 'Milk',
+      id: '4',
       text: 'Milk',
+    },
+    {
+      id: '5',
+      text: 'Water',
     },
   ];
 
   stockManagementForm = this._fb.nonNullable.group({});
 
   constructor() {
-       addIcons({
-          gitCompareOutline,
-          trashOutline,
-          createOutline,
-          pencilOutline
-        });
+    addIcons({
+      addCircleOutline,
+      trashOutline
+    });
   }
 
   ngOnInit() {}
 
-  updateStock(){}
+  onProductSelect(product: any) {
+    this.selectedProduct = product;
+  }
 
-    addStock(){
-    this.addedStocks.update((stock) => [...stock, { stockName : 'Tea / Coffee' , quantity : 100 }])
+  addStock() {
+    if (this.selectedProduct && this.closingStock && this.closingStock > 0) {
+      // Check if product already exists
+      const existingIndex = this.addedStocks().findIndex(
+        stock => stock.productId === this.selectedProduct.id
+      );
+
+      if (existingIndex >= 0) {
+        // Update existing stock
+        this.addedStocks.update(stocks => {
+          const updated = [...stocks];
+          updated[existingIndex] = {
+            productId: this.selectedProduct.id,
+            productName: this.selectedProduct.text,
+            closingStock: this.closingStock!
+          };
+          return updated;
+        });
+      } else {
+        // Add new stock
+        this.addedStocks.update(stocks => [
+          ...stocks,
+          {
+            productId: this.selectedProduct.id,
+            productName: this.selectedProduct.text,
+            closingStock: this.closingStock!
+          }
+        ]);
+      }
+
+      // Reset form (but keep machine reading)
+      this.selectedProduct = null;
+      this.closingStock = null;
+    }
+  }
+
+  removeStock(index: number) {
+    this.addedStocks.update(stocks => stocks.filter((_, i) => i !== index));
+  }
+
+  updateStock() {
+    if (this.addedStocks().length > 0) {
+      // TODO: Submit to API
+      const dataToSave = {
+        stocks: this.addedStocks(),
+        machineReading: this.machineReading || null
+      };
+      console.log('Saving closing stocks:', dataToSave);
+      // Example: await this.http.post('/api/stocks/closing', dataToSave);
+      alert('Closing stocks saved successfully!');
+    }
   }
 }

@@ -1,10 +1,118 @@
-<ion-tabs>
-  <ion-tab-bar  class="menu shadow-box" slot="bottom">
-    @for (tab of tabList; track $index) {
-    <ion-tab-button tab="{{ tab.route }}" >
-      <ion-icon color="primary" aria-hidden="true" name="{{ tab.icon }}"></ion-icon>
-      <ion-label color="primary">{{ tab.name }}</ion-label>
-    </ion-tab-button>
+<!-- <ion-content>
+  <ion-tabs>
+    <ion-tab-bar class="menu shadow-box" slot="bottom">
+      @for (tab of tabList; track $index) {
+      @if (tab.route) {
+      <ion-tab-button tab="{{ tab.route }}">
+        <ion-icon aria-hidden="false" name="{{ tab.icon }}"></ion-icon>
+        <ion-label>{{ tab.name }}</ion-label>
+      </ion-tab-button>
+      }
+      @else {
+      <ion-tab-button id="open-modal" (click)="ontabClick($event,tab)">
+        <ion-icon aria-hidden="false" name="{{ tab.icon }}"></ion-icon>
+        <ion-label>{{ tab.name }}</ion-label>
+      </ion-tab-button>
+      }
+      }
+    </ion-tab-bar>
+  </ion-tabs>
+</ion-content> -->
+
+<!-- <ion-modal #modal trigger="open-modal" [initialBreakpoint]="'0.25'" [breakpoints]="[0, 0.25, 0.5, 0.75]">
+  <ion-list>
+    @for (menu of additionalMenu; track $index) {
+    <ion-item>
+      <ion-label> {{ menu.name }}</ion-label>
+    </ion-item>
     }
-  </ion-tab-bar>
-</ion-tabs>
+  </ion-list>
+</ion-modal> -->
+
+<!-- <ion-menu contentId="main-content">
+
+  <ion-content class="ion-padding">
+    <div>
+          <div class="d-flex-center">
+          <ion-img class="logo-icon"  src="assets/icon/logo.svg" ></ion-img>
+    </div>
+    <ion-list class="menu-list">
+      @for (tab of tabList; track $index) { @if (tab.route) {
+      <div class="menu-item" (click)="onMenuClick(tab)">
+        <ion-icon color="primary" aria-hidden="false" name="{{ tab.icon }}"></ion-icon>
+        <ion-label class="menu-text" color="primary" >{{ tab.name }}</ion-label>
+      </div>
+      } }
+    </ion-list>
+    </div>
+
+  </ion-content>
+</ion-menu>
+-->
+
+
+<ion-menu menuId="vendingMenu" contentId="main-content" side="start" type="overlay" class="vm-menu">
+  <ion-content>
+    <div class="menu">
+      <!-- Profile / Brand header -->
+      <div class="vm-header ion-padding">
+        <ion-avatar class="vm-avatar">
+          <img alt="avatar" [src]="userDetails.userDetails()?.profile_photo || 'https://ionicframework.com/docs/img/demos/avatar.svg'"   />
+        </ion-avatar>
+        <div class="vm-title">
+          <ion-text color="primary">
+            <h2>EB Connect</h2>
+          </ion-text>
+          <ion-text color="primary">
+            <p>{{ userDetails.userDetails()?.name | titlecase }} • {{ userDetails.userDetails()?.role?.name }}</p>
+          </ion-text>
+        </div>
+        <ion-buttons>
+          <ion-menu-toggle>
+            <ion-button fill="clear" color="primary" aria-label="Close menu">
+              <ion-icon slot="icon-only" name="close"></ion-icon>
+            </ion-button>
+          </ion-menu-toggle>
+        </ion-buttons>
+      </div>
+
+      <!-- Menu items -->
+
+      <ion-list lines="none" class="vm-list">
+        @for (tab of tabList; track $index) { @if (tab.route) {
+        <ion-menu-toggle auto-hide="true">
+          <ion-item [class.active-route]="activeRoute === tab.route" (click)="onMenuClick(tab)" detail="false">
+            <ion-icon [color]="activeRoute === tab.route ? '' : 'primary' " [name]="tab.icon" slot="start"></ion-icon>
+            <ion-label [color]="activeRoute === tab.route ? '' : 'primary' ">{{ tab.name }}</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
+        }}
+      </ion-list>
+
+      <div class="vm-footer ion-padding">
+        <ion-menu-toggle auto-hide="true">
+          <ion-button type="button" expand="block" color="primary" size="large" (click)="onLogout()">
+            <ion-icon name="log-out" slot="start"></ion-icon>
+            Logout
+          </ion-button>
+        </ion-menu-toggle>
+      </div>
+    </div>
+  </ion-content>
+</ion-menu>
+
+<div class="ion-page" id="main-content">
+  <ion-header>
+    <ion-toolbar class="vm-toolbar">
+      <ion-buttons slot="start">
+        <ion-menu-button  color="primary" ></ion-menu-button>
+      </ion-buttons>
+      <ion-title color="primary" class="toolbar-title">{{ selectedMenu }}</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content>
+    <div class="ion-page" id="main-content">
+      <ion-router-outlet></ion-router-outlet>
+    </div>
+  </ion-content>
+</div>

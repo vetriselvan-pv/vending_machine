@@ -1,28 +1,321 @@
-.name-text {
-  display: flex;
-  height: 30%;
-  width: 100%;
+.profile-content {
+  --background: #f5f5f5;
+  padding: 1rem
 }
-.circle {
-  width: 11.25rem;
-  height: 11.25rem;
-  border-radius: 50%;
+
+@media(max-width:480px) {
+  .profile-content {
+    padding: .75rem
+  }
+}
+
+@media(min-width:768px) {
+  .profile-content {
+    padding: 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto
+  }
+}
+
+.profile-header-card {
+  margin: 0 0 1rem;
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .1);
+  background: linear-gradient(135deg, rgba(255, 0, 0, .1)0%, rgba(255, 0, 0, .05)100%)
+}
+
+.profile-header-card ion-card-content {
+  padding: 2rem 1.5rem
+}
+
+@media(max-width:480px) {
+  .profile-header-card ion-card-content {
+    padding: 1.5rem 1rem
+  }
+}
+
+@media(min-width:768px) {
+  .profile-header-card {
+    border-radius: 1.25rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .1)
+  }
+}
+
+.profile-icon-section {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #ffffff;
-
-    h1 {
-      font-weight: 600;
-      font-size: 7rem;
-    }
+  width: 100%
 }
 
-ion-card {
-  box-shadow: none;
-  background: none;
+.profile-circle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .vm-profile-avatar {
+    width: 160px;
+    height: 140px;
+  }
 }
 
-ion-grid{
-  --ion-grid-column-padding : 0.6rem;
+@media(max-width:480px) {
+  .profile-circle {
+    width: 9rem;
+    height: 9rem
+  }
+}
+
+@media(min-width:768px) {
+  .profile-circle {
+    width: 12.5rem;
+    height: 12.5rem
+  }
+}
+
+.profile-initial {
+  font-weight: 700;
+  font-size: 7rem;
+  color: #FF0000;
+  margin: 0;
+  font-family: "Roboto", sans-serif;
+  text-transform: uppercase
+}
+
+@media(max-width:480px) {
+  .profile-initial {
+    font-size: 5rem
+  }
+}
+
+@media(min-width:768px) {
+  .profile-initial {
+    font-size: 8rem
+  }
+}
+
+.details-card {
+  margin: 0 0 1rem;
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .1)
+}
+
+.details-card ion-card-content {
+  padding: 1.5rem
+}
+
+@media(max-width:480px) {
+  .details-card ion-card-content {
+    padding: 1rem
+  }
+}
+
+@media(min-width:768px) {
+  .details-card {
+    border-radius: 1.25rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .1)
+  }
+}
+
+.details-header {
+  margin-bottom: 1.5rem;
+  padding-bottom: .75rem;
+  border-bottom: 1px solid rgba(var(--ion-color-primary-rgb), .2)
+}
+
+@media(max-width:480px) {
+  .details-header {
+    margin-bottom: 1rem;
+    padding-bottom: .5rem
+  }
+}
+
+.details-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--ion-color-primary);
+  font-family: "Roboto", sans-serif
+}
+
+@media(max-width:480px) {
+  .details-title {
+    font-size: 1rem
+  }
+}
+
+.details-list {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem
+}
+
+@media(max-width:480px) {
+  .details-list {
+    gap: .5rem
+  }
+}
+
+.detail-item {
+  background: #fff;
+  border-radius: .75rem;
+  border: 1px solid #e0e0e0;
+  padding: 1rem;
+  transition: all .3s ease
+}
+
+.detail-item:hover {
+  border-color: var(--ion-color-primary);
+  box-shadow: 0 2px 8px rgba(var(--ion-color-primary-rgb), .1)
+}
+
+@media(max-width:480px) {
+  .detail-item {
+    padding: .75rem
+  }
+}
+
+.detail-grid,
+.detail-row,
+.detail-label-col,
+.detail-value-col {
+  padding: 0
+}
+
+.detail-label {
+  font-size: .8rem;
+  font-weight: 500;
+  color: #666;
+  font-family: "Roboto", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  display: block
+}
+
+@media(max-width:480px) {
+  .detail-label {
+    font-size: .75rem
+  }
+}
+
+.detail-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  font-family: "Roboto", sans-serif;
+  display: block;
+  word-break: break-word
+}
+
+@media(max-width:480px) {
+  .detail-value {
+    font-size: .95rem
+  }
+}
+
+@media(min-width:768px) {
+  .detail-value {
+    font-size: 1.05rem
+  }
+}
+
+.reset-password-button {
+  margin-top: 1rem;
+  margin-bottom: .75rem;
+  --border-radius: .75rem !important;
+  --border-width: 2px !important;
+  --box-shadow: none !important;
+  --padding-top: 1rem;
+  --padding-bottom: 1rem;
+  height: 52px;
+  font-weight: 600;
+  font-size: 1rem;
+  font-family: "Roboto", sans-serif;
+  border-radius: .75rem !important;
+  transition: all .3s ease
+}
+
+.reset-password-button::part(native) {
+  border-radius: .75rem !important;
+  border: 2px solid var(--ion-color-primary) !important
+}
+
+.reset-password-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(var(--ion-color-primary-rgb), .25) !important
+}
+
+.reset-password-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(var(--ion-color-primary-rgb), .2) !important
+}
+
+@media(max-width:480px) {
+  .reset-password-button {
+    height: 50px;
+    font-size: .95rem;
+    --padding-top: .9rem;
+    --padding-bottom: .9rem;
+    border-radius: .65rem !important
+  }
+}
+
+.logout-button {
+  margin-top: .75rem;
+  --border-radius: .75rem !important;
+  --border-width: 0 !important;
+  --box-shadow: none !important;
+  --padding-top: 1.1rem;
+  --padding-bottom: 1.1rem;
+  --background: linear-gradient(135deg, #FF0000 0%, #CC0000 100%) !important;
+  height: 58px;
+  font-weight: 600;
+  font-size: 1.05rem;
+  font-family: "Roboto", sans-serif;
+  border-radius: .75rem !important;
+  border: none !important;
+  box-shadow: 0 4px 16px rgba(255, 0, 0, .35) !important;
+  transition: all .3s ease
+}
+
+.logout-button::part(native) {
+  border-radius: .75rem !important;
+  border: none !important;
+  background: linear-gradient(135deg, #FF0000 0%, #CC0000 100%) !important
+}
+
+.logout-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 0, 0, .45) !important
+}
+
+.logout-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(255, 0, 0, .3) !important
+}
+
+@media(max-width:480px) {
+  .logout-button {
+    height: 54px;
+    font-size: 1rem;
+    --padding-top: 1rem;
+    --padding-bottom: 1rem;
+    border-radius: .65rem !important
+  }
+}
+
+ion-grid,
+ion-row {
+  padding: 0;
+  margin-left: 0;
+  margin-right: 0
+}
+
+ion-col {
+  padding: .5rem
+}
+
+@media(max-width:480px) {
+  ion-col {
+    padding: .25rem
+  }
 }

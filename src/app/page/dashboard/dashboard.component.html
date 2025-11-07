@@ -1,58 +1,149 @@
-<ion-content class="ion-padding dashboard" fullscreen="true">
-  <ion-grid class="header-card ion-padding ">
-    <ion-row class="ion-align-items-stretch">
-      <ion-col size="8">
-        <ion-text color="primary" class="ion-text-start">
-          <h1>Welcome vetri!</h1>
-          <h5>Good morning!</h5>
-        </ion-text>
-      </ion-col>
-      <ion-col size="4">
-        <ion-img src="assets/image/logo.svg"></ion-img>
-      </ion-col>
-    </ion-row>
-    <ion-row>
-      <ion-col size="12">
-        <ion-text class="ion-text-end" color="primary">
-          <h6>TCS Navallur, Chennai</h6>
-        </ion-text>
-      </ion-col>
-    </ion-row>
-    <ion-row>
+<ion-content class="dashboard" fullscreen="true">
+  <!-- Camera Notch Overlay -->
+  <div class="camera-notch-overlay"></div>
+  <!-- Header Card -->
+  <ion-card class="header-card">
+    <ion-card-content>
       <ion-grid>
-        <ion-row>
-          <ion-col class="btn-content" size="6">
-            <ion-button id="punch-in" color="primary" (click)="takeSelfie()" expand="block">Punch
-              in</ion-button>
-            <ion-button id="punch-out" color="primary" expand="block">Punch
-              out</ion-button>
+        <!-- Welcome Section -->
+        <ion-row class="welcome-row">
+          <ion-col size="8" class="ion-align-self-center">
+            <div class="welcome-content">
+              <h1 class="welcome-title">Welcome vetri!</h1>
+              <h5 class="welcome-subtitle">Good morning!</h5>
+            </div>
           </ion-col>
-          <ion-col size="6" class="ion-text-end">
-            <ion-card class="punch-details ">
-              <ion-grid>
-                <ion-row>
-                  <ion-col>
+          <ion-col size="4" class="logo-col">
+            <div class="logo-wrapper">
+              <ion-img src="assets/image/eb-logo-red.svg" alt="Logo"></ion-img>
+            </div>
+          </ion-col>
+        </ion-row>
+
+        <!-- Customer Selection Section -->
+        <ion-row class="customer-row">
+          <ion-col size="12">
+            <div class="customer-select-wrapper">
+              <ion-item class="customer-select-item" [disabled]="isPunchedIn">
+                <ion-label position="stacked" class="customer-label">Select Customer</ion-label>
+                <ion-select
+                  [(ngModel)]="selectedCustomerId"
+                  placeholder="Select Customer"
+                  interface="action-sheet"
+                  class="customer-select"
+                  [disabled]="isPunchedIn"
+                  (ionChange)="onCustomerChange($event)">
+                  <ion-select-option *ngFor="let customer of customers" [value]="customer.id">
+                    {{ customer.name }}
+                  </ion-select-option>
+                </ion-select>
+              </ion-item>
+              <div class="selected-customer-info" *ngIf="attendance && attendance.customerName && attendance.punchOutTime">
+                <ion-text color="primary">
+                  <span class="customer-name-text">Completed: {{ attendance.customerName }}</span>
+                </ion-text>
+              </div>
+            </div>
+          </ion-col>
+        </ion-row>
+
+        <!-- Punch Section -->
+        <ion-row class="punch-row">
+          <ion-col size="12" class="btn-content-col">
+            <div class="btn-content">
+              <ion-button 
+                id="punch-in" 
+                color="primary" 
+                (click)="punchIn()" 
+                class="punch-btn punch-in-btn"
+                [disabled]="isPunchedIn || !selectedCustomerId || (attendance && attendance.punchOutTime)">
+                Punch in
+              </ion-button>
+              <ion-button 
+                id="punch-out" 
+                color="primary" 
+                (click)="punchOut()" 
+                class="punch-btn punch-out-btn"
+                [disabled]="!isPunchedIn || (attendance && attendance.punchOutTime)">
+                Punch out
+              </ion-button>
+            </div>
+          </ion-col>
+          <ion-col size="6" class="details-col">
+            <ion-card class="punch-details-card">
+              <ion-card-content>
+                <div class="punch-details">
+                  <!-- Date Display -->
+                  <div class="date-text">
                     <ion-text color="secondary">
-                      {{ toDate | date : 'yyyy MMM dd'}}
+                      <span class="date-label">{{ getCurrentDate() }}</span>
                     </ion-text>
-                  </ion-col>
-                </ion-row>
-                <ion-row>
-                  <ion-col>
+                  </div>
+                  
+                  <!-- Status Display -->
+                  <div class="status-text" *ngIf="!attendance">
                     <ion-text color="secondary">
-                      User not yet Punched In
+                      <span class="status-label">User not yet Punched In</span>
                     </ion-text>
-                  </ion-col>
-                </ion-row>
-              </ion-grid>
+                  </div>
+                  
+                  <!-- After Punch In -->
+                  <div class="attendance-info" *ngIf="attendance">
+                    <div class="customer-section" *ngIf="attendance.customerName">
+                      <div class="customer-label-small">Customer</div>
+                      <div class="customer-value">{{ attendance.customerName }}</div>
+                    </div>
+                    
+                    <div class="time-section" *ngIf="attendance.punchInTime">
+                      <div class="time-label">Punch In Time</div>
+                      <div class="time-value">{{ attendance.punchInTime }}</div>
+                    </div>
+                    
+                    <div class="time-section" *ngIf="attendance.punchOutTime">
+                      <div class="time-label">Punch Out Time</div>
+                      <div class="time-value">{{ attendance.punchOutTime }}</div>
+                    </div>
+                    
+                    <div class="current-time" *ngIf="isPunchedIn">
+                      <div class="current-time-label">Current Time</div>
+                      <div class="current-time-value">{{ getCurrentTime() }}</div>
+                    </div>
+                  </div>
+                </div>
+              </ion-card-content>
             </ion-card>
           </ion-col>
         </ion-row>
       </ion-grid>
+    </ion-card-content>
+  </ion-card>
 
-    </ion-row>
-  </ion-grid>
-  <ion-card class="ion-padding">
-    <ion-datetime color="primary" presentation="date"></ion-datetime>
+  <!-- Attendance Calendar Card -->
+  <ion-card class="date-card">
+    <ion-card-content>
+      <div class="calendar-header">
+        <h3 class="calendar-title">Attendance Calendar</h3>
+      </div>
+      <ion-datetime 
+        color="primary" 
+        presentation="date"
+        [readonly]="true"
+        [max]="getMaxDate()"
+        [min]="getMinDate()"
+        [value]="getCurrentMonthDate()"
+        [disabled]="true"
+        class="attendance-calendar">
+      </ion-datetime>
+      <div class="calendar-legend">
+        <div class="legend-item">
+          <span class="legend-color present"></span>
+          <span class="legend-text">Present</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-color absent"></span>
+          <span class="legend-text">Absent</span>
+        </div>
+      </div>
+    </ion-card-content>
   </ion-card>
 </ion-content>

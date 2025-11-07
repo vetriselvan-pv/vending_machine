@@ -1,0 +1,420 @@
+.onboarding-content {
+    --overflow: hidden;
+    --background: #fff;
+    position: fixed;
+    width: 100%;
+    height: 100%
+}
+
+::ng-deep .nav-button::part(native) {
+    border-radius: 50% !important;
+    overflow: hidden
+}
+
+::ng-deep .nav-button::part(native)::before,
+::ng-deep .nav-button::part(native)::after {
+    border-radius: 50% !important
+}
+
+.onboarding-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 100vh;
+    width: 100%;
+    padding: 1.5rem;
+    position: relative
+}
+
+.skip-button-wrapper {
+    display: flex;
+    justify-content: flex-end;
+    z-index: 10;
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 1rem 1.5rem
+}
+
+.skip-text {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    color: #666;
+    font-size: .9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color .2s ease
+}
+
+.skip-text ion-icon {
+    font-size: 1.2rem
+}
+
+.skip-text:hover,
+.skip-text:active {
+    color: #FF0000
+}
+
+@media(max-width:480px) {
+    .skip-text {
+        font-size: .85rem;
+        gap: .4rem
+    }
+
+    .skip-text ion-icon {
+        font-size: 1.1rem
+    }
+}
+
+.onboarding-slides {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    margin-top: 3rem;
+    overflow: hidden;
+    position: relative
+}
+
+.slides-wrapper {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    transition: transform .3s ease-in-out;
+    will-change: transform
+}
+
+.slide-item {
+    min-width: 100%;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0
+}
+
+.slide-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 2rem 1rem;
+    text-align: center;
+    animation: fadeIn .5s ease-in-out
+}
+
+.icon-wrapper {
+    width: 280px;
+    height: 280px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 3rem;
+    animation: scaleIn .6s ease-in-out
+}
+
+@media(max-width:480px) {
+    .icon-wrapper {
+        width: 220px;
+        height: 220px;
+        margin-bottom: 2rem
+    }
+}
+
+@media(min-width:768px) {
+    .icon-wrapper {
+        width: 320px;
+        height: 320px;
+        margin-bottom: 3.5rem
+    }
+}
+
+.slide-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    animation: pulse 2s ease-in-out infinite
+}
+
+@media(max-width:480px) {
+    .slide-image {
+        max-width: 80%;
+        max-height: 80%
+    }
+}
+
+@media(min-width:768px) {
+    .slide-image {
+        max-width: 90%;
+        max-height: 90%
+    }
+}
+
+.slide-text {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 0 1rem
+}
+
+.slide-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #333;
+    margin: 0 0 1.5rem;
+    font-family: "Roboto", sans-serif;
+    animation: fadeInUp .6s ease-in-out
+}
+
+@media(max-width:480px) {
+    .slide-title {
+        font-size: 1.75rem;
+        margin-bottom: 1rem
+    }
+}
+
+@media(min-width:768px) {
+    .slide-title {
+        font-size: 2.5rem;
+        margin-bottom: 2rem
+    }
+}
+
+.slide-description {
+    font-size: 1.1rem;
+    color: #666;
+    line-height: 1.6;
+    margin: 0;
+    font-weight: 400;
+    animation: fadeInUp .8s ease-in-out
+}
+
+@media(max-width:480px) {
+    .slide-description {
+        font-size: 1rem;
+        line-height: 1.5
+    }
+}
+
+@media(min-width:768px) {
+    .slide-description {
+        font-size: 1.2rem;
+        line-height: 1.7
+    }
+}
+
+.navigation-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 2rem 0 1rem;
+    width: 100%
+}
+
+@media(max-width:480px) {
+    .navigation-buttons {
+        padding: 1.5rem 0 1rem;
+        gap: .75rem
+    }
+}
+
+.nav-button {
+    --border-radius: 50% !important;
+    --box-shadow: none !important;
+    --border-width: 0 !important;
+    width: 56px;
+    height: 56px;
+    min-width: 56px;
+    min-height: 56px;
+    max-width: 56px;
+    max-height: 56px;
+    margin: 0;
+    padding: 0;
+    border-radius: 50% !important;
+    border: none !important;
+    box-shadow: none !important;
+    overflow: hidden
+}
+
+@media(max-width:480px) {
+    .nav-button {
+        width: 52px;
+        height: 52px;
+        min-width: 52px;
+        min-height: 52px;
+        max-width: 52px;
+        max-height: 52px
+    }
+
+    .nav-button ion-icon {
+        font-size: 1.6rem
+    }
+}
+
+.nav-button ion-icon {
+    font-size: 1.8rem;
+    margin: 0
+}
+
+.nav-button::part(native) {
+    border-radius: 50% !important;
+    border: none !important;
+    box-shadow: none !important
+}
+
+.nav-button-placeholder {
+    width: 56px;
+    height: 56px
+}
+
+@media(max-width:480px) {
+    .nav-button-placeholder {
+        width: 52px;
+        height: 52px
+    }
+}
+
+.prev-button {
+    --background: transparent;
+    --color: #666;
+    --border-width: 1.5px;
+    --border-color: #ddd;
+    --border-style: solid;
+    --border-radius: 50% !important;
+    transition: all .3s ease;
+    border: 1.5px solid #ddd !important
+}
+
+.prev-button:active,
+.prev-button:hover {
+    --color: #FF0000;
+    --border-color: #FF0000;
+    border-color: #FF0000 !important;
+    transform: scale(1.1)
+}
+
+.prev-button::part(native) {
+    border: 1.5px solid #ddd !important;
+    border-radius: 50% !important
+}
+
+.prev-button::part(native):active {
+    border-color: #FF0000 !important
+}
+
+.next-button {
+    --background: #FF0000;
+    --color: #fff;
+    --border-width: 0 !important;
+    --border-radius: 50% !important;
+    --box-shadow: 0 4px 16px rgba(255, 0, 0, .35), 0 2px 8px rgba(255, 0, 0, .25) !important;
+    transition: all .3s ease;
+    border: none !important;
+    border-radius: 50% !important;
+    box-shadow: 0 4px 16px rgba(255, 0, 0, .35), 0 2px 8px rgba(255, 0, 0, .25)
+}
+
+.next-button:active,
+.next-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(255, 0, 0, .45), 0 3px 10px rgba(255, 0, 0, .3) !important
+}
+
+.next-button::part(native) {
+    border: none !important;
+    border-radius: 50% !important;
+    box-shadow: 0 4px 16px rgba(255, 0, 0, .35), 0 2px 8px rgba(255, 0, 0, .25)
+}
+
+.page-indicators {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: .75rem;
+    padding-bottom: 1.5rem
+}
+
+@media(max-width:480px) {
+    .page-indicators {
+        padding-bottom: 1rem;
+        gap: .5rem
+    }
+}
+
+.indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #ddd;
+    transition: all .3s ease;
+    cursor: pointer
+}
+
+.indicator.active {
+    width: 30px;
+    background: #FF0000;
+    border-radius: 5px
+}
+
+@media(max-width:480px) {
+    .indicator {
+        width: 8px;
+        height: 8px
+    }
+
+    .indicator.active {
+        width: 24px
+    }
+}
+
+::ng-deep .swiper-pagination {
+    display: none !important
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0
+    }
+
+    100% {
+        opacity: 1
+    }
+}
+
+@keyframes fadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(20px)
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0)
+    }
+}
+
+@keyframes scaleIn {
+    0% {
+        opacity: 0;
+        transform: scale(.8)
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1)
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1)
+    }
+
+    50% {
+        transform: scale(1.05)
+    }
+}

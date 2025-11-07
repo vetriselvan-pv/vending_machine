@@ -1,35 +1,57 @@
-  <ion-content class="ion-padding" fullscreen="true">
-    <div class="name-text ion-align-items-center ion-text-center ion-justify-content-center  ">
-      <ion-text color="primary">
-        <div class="circle shadow-box">
-          <h1 >V</h1>
+<ion-content [fullscreen]="true" class="ion-padding profile-content">
+  <!-- Camera Notch Overlay -->
+  <div class="camera-notch-overlay"></div>
+
+  <!-- Profile Header Card -->
+  <ion-card class="profile-header-card">
+    <ion-card-content>
+      <div class="profile-icon-section">
+        <div class="profile-circle">
+          <!-- <h1 class="profile-initial">V</h1> -->
+          <ion-avatar class="vm-profile-avatar">
+            <img alt="avatar"
+              [src]="userDetails.userDetails()?.profile_photo || 'https://ionicframework.com/docs/img/demos/avatar.svg'" />
+          </ion-avatar>
         </div>
-      </ion-text>
-    </div>
-    <ion-grid >
-      @for ( user of userDetail ; track user) {
-      <ion-row >
-        <ion-col size="12">
-          <ion-text color="secondary" class="ion-text-start">
-            <b>{{ user.id | titlecase }}</b>
-          </ion-text>
-        </ion-col>
-        <ion-col size="12" class="ion-text-end">
-          <ion-text color="secondary" >
-            <b>{{ user.value }}</b>
-          </ion-text>
-        </ion-col>
-      </ion-row>
-      }
-    </ion-grid>
-      <ion-button
-      class="ion-margin-top"
-      type="submit"
-      expand="block"
-      size="default"
-      color="primary"
-      fill="outline"
-    >
-      <ion-text><strong>Reset Password</strong></ion-text>
-    </ion-button>
-  </ion-content>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- User Details Card -->
+  <ion-card class="details-card">
+    <ion-card-content>
+      <div class="details-header">
+        <ion-text class="details-title">User Details</ion-text>
+      </div>
+
+      <div class="details-list">
+        @for (user of userDetail(); track user.id) {
+        <div class="detail-item">
+          <ion-grid class="detail-grid">
+            <ion-row class="detail-row">
+              <ion-col size="12" class="detail-label-col">
+                <ion-text class="detail-label">{{ user.id | titlecase }}</ion-text>
+              </ion-col>
+              <ion-col size="12" class="detail-value-col">
+                <ion-text class="detail-value">{{ user.value }}</ion-text>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </div>
+        }
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Reset Password Button -->
+  <ion-button type="submit" expand="block" size="large" class="reset-password-button" (click)="resetPassword()"
+    color="primary" fill="outline">
+    <ion-text><strong>Reset Password</strong></ion-text>
+  </ion-button>
+
+  <!-- Logout Button -->
+  <ion-button expand="block" size="large" class="logout-button" (click)="logout()">
+    <ion-icon slot="start" name="log-out-outline"></ion-icon>
+    <ion-text><strong>Logout</strong></ion-text>
+  </ion-button>
+</ion-content>

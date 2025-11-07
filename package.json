@@ -33,6 +33,7 @@
     "@ionic/angular": "^8.7.4",
     "@ionic/core": "^8.7.4",
     "@stencil/core": "^4.37.1",
+    "dos2unix": "^1.1.2",
     "ionic-selectable": "^5.0.3",
     "ionicons": "^7.0.0",
     "rxjs": "~7.8.0",

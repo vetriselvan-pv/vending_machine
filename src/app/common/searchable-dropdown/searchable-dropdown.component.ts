@@ -63,6 +63,7 @@ export class SearchableDropdownComponent implements OnInit {
   onSelect(item:any){
     this.selectedValue = item[this.itemIdField()];
     this.selectedText.set(item[this.itemTextField()]);
+    this.selectionChange.emit(item);
     this.cancel()
   }
 
