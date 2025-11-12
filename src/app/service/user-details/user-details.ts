@@ -20,4 +20,13 @@ export class UserDetails {
       }
     | undefined
   >(undefined);
+
+  privileges = signal<string[]>([]);
+
+  /**
+   * Check if user has a specific privilege
+   */
+  hasPrivilege(privilege: string): boolean {
+    return this.privileges().includes(privilege);
+  }
 }

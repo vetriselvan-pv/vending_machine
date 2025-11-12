@@ -1,6 +1,7 @@
 import { TitleCasePipe, CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { ViewWillEnter } from '@ionic/angular';
 import {
   IonContent,
   IonCard,
@@ -12,10 +13,13 @@ import {
   IonButton,
   IonIcon,
   IonAvatar,
+  ToastController,
+  LoadingController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { logOutOutline } from 'ionicons/icons';
-import { UserDetails } from 'src/app/service/user-details/user-details';
+import { ProfileService } from 'src/app/service/profile/profile.service';
+import { Preferences } from '@capacitor/preferences';
 
 @Component({
   selector: 'app-profile',
@@ -31,26 +35,45 @@ import { UserDetails } from 'src/app/service/user-details/user-details';
     IonRow,
     IonCol,
     IonText,
-    TitleCasePipe,
     IonButton,
     IonIcon,
     IonAvatar,
   ],
 })
-export class ProfileComponent implements OnInit {
+export class ProfileComponent implements OnInit, ViewWillEnter {
   private router = inject(Router);
-  protected userDetails = inject(UserDetails);
+  private profileService = inject(ProfileService);
+  private toastController = inject(ToastController);
+  private loadingController = inject(LoadingController);
+
+  profileData = signal<any>(null);
+  isLoading = signal<boolean>(false);
 
   userDetail = computed(() => {
-    const user = this.userDetails.userDetails();
-    return Object.keys(user || {})
-      .filter((key) =>
-        ['name', 'employee_code', 'email', 'mobile_number'].includes(key)
-      )
-      .map((key) => {
-        return { id: key, value: user?.[key as keyof typeof user] };
-      });
+    const profile = this.profileData();
+    if (!profile) return [];
+    
+    const employee = profile.employee || {};
+    const fields = [
+      { key: 'name', label: 'Name', value: employee.name || 'N/A' },
+      { key: 'employee_code', label: 'Employee Code', value: employee.employee_code || 'N/A' },
+      { key: 'email', label: 'Email', value: employee.email || 'N/A' },
+      { key: 'mobile_number', label: 'Mobile Number', value: employee.mobile_number || 'N/A' },
+      { key: 'username', label: 'Username', value: profile.username || 'N/A' },
+      { key: 'role', label: 'Role', value: employee.role?.name || 'N/A' }
+    ];
+    
+    return fields;
   });
+
+  profilePhoto = computed(() => {
+    const profile = this.profileData();
+    return profile?.employee?.profile_photo || 'https://ionicframework.com/docs/img/demos/avatar.svg';
+  });
+
+  // Flag to prevent multiple simultaneous API calls
+  private isInitializing = false;
+  private isDataLoaded = false;
 
   constructor() {
     addIcons({
@@ -58,15 +81,76 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  ngOnInit() {}
+  async ngOnInit() {
+    await this.initializeData();
+  }
 
-  logout() {
+  async ionViewWillEnter() {
+    // Only reload if data hasn't been loaded yet
+    if (!this.isDataLoaded && !this.isInitializing) {
+      await this.initializeData();
+    }
+  }
+
+  async initializeData() {
+    // Prevent multiple simultaneous calls
+    if (this.isInitializing) {
+      return;
+    }
+
+    this.isInitializing = true;
+    this.isLoading.set(true);
+
+    try {
+      await this.loadProfile();
+      this.isDataLoaded = true;
+    } catch (error) {
+      console.error('Error initializing profile data:', error);
+    } finally {
+      this.isInitializing = false;
+      this.isLoading.set(false);
+    }
+  }
+
+  async loadProfile() {
+    try {
+      const response = await this.profileService.getProfile();
+      const responseData = response?.data;
+      
+      if (responseData?.success && responseData?.data) {
+        this.profileData.set(responseData.data);
+      } else {
+        this.profileData.set(null);
+        await this.showToast('Failed to load profile', 'danger');
+      }
+    } catch (error: any) {
+      console.error('Error loading profile:', error);
+      this.profileData.set(null);
+      // Auth errors are handled by interceptor
+      if (error?.status !== 401 && error?.status !== 403) {
+        await this.showToast('Error loading profile. Please try again.', 'danger');
+      }
+    }
+  }
+
+  async showToast(message: string, color: 'success' | 'danger' | 'warning' = 'success') {
+    const toast = await this.toastController.create({
+      message,
+      duration: 2000,
+      position: 'top',
+      color
+    });
+    await toast.present();
+  }
+
+  async logout() {
     if (confirm('Are you sure you want to logout?')) {
       // Clear any stored data
+      await Preferences.clear();
       localStorage.clear();
 
       // Navigate to login screen
-      this.router.navigate(['/login']);
+      this.router.navigate(['/login'], { replaceUrl: true });
     }
   }
 

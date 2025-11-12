@@ -1,0 +1,167 @@
+ion-modal {
+  --width: 100%;
+  --max-width: 100%;
+  --height: 100%;
+}
+
+ion-content {
+  --padding-bottom: 20px;
+}
+
+.save-button {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.product-card {
+  margin-bottom: 16px;
+}
+
+.product-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.product-subtitle {
+  font-size: 0.9rem;
+  color: var(--ion-color-medium);
+  margin: 0;
+}
+
+.quantities-row {
+  margin: 12px 0;
+  padding: 12px;
+  background: var(--ion-color-light);
+  border-radius: 8px;
+}
+
+.quantity-badge {
+  text-align: center;
+  
+  .quantity-label {
+    display: block;
+    font-size: 0.75rem;
+    margin-bottom: 4px;
+    font-weight: 500;
+  }
+  
+  .badge-value {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    min-width: 40px;
+    
+    &.badge-info {
+      background-color: var(--ion-color-primary-tint);
+      color: var(--ion-color-primary);
+    }
+    
+    &.badge-success {
+      background-color: var(--ion-color-success-tint);
+      color: var(--ion-color-success);
+    }
+    
+    &.badge-danger {
+      background-color: var(--ion-color-danger-tint);
+      color: var(--ion-color-danger);
+    }
+    
+    &.badge-primary {
+      background-color: var(--ion-color-primary-tint);
+      color: var(--ion-color-primary);
+      font-weight: 700;
+    }
+  }
+}
+
+.closing-qty-item {
+  margin-top: 8px;
+}
+
+.required {
+  color: var(--ion-color-danger);
+  margin-left: 4px;
+}
+
+.info-text {
+  display: block;
+  margin-top: 4px;
+  margin-left: 16px;
+  font-size: 0.85rem;
+  
+  ion-icon {
+    vertical-align: middle;
+    margin-right: 4px;
+  }
+}
+
+.error-text {
+  display: block;
+  margin-top: 4px;
+  margin-left: 16px;
+  font-size: 0.85rem;
+  
+  ion-icon {
+    vertical-align: middle;
+    margin-right: 4px;
+  }
+}
+
+.available-stock-display {
+  background: var(--ion-color-light);
+  padding: 12px;
+  border-radius: 8px;
+  text-align: center;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  
+  .available-label {
+    display: block;
+    font-size: 0.75rem;
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+  
+  .available-value {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 4px;
+    
+    strong {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--ion-color-primary);
+    }
+    
+    .unit-text {
+      font-size: 0.85rem;
+      color: var(--ion-color-medium);
+      margin-left: 2px;
+    }
+  }
+}
+
+.closing-qty-item {
+  .max-hint {
+    font-size: 0.75rem;
+    color: var(--ion-color-medium);
+    font-weight: normal;
+    margin-left: 4px;
+  }
+  
+  &.invalid {
+    --border-color: var(--ion-color-danger);
+    --highlight-color-focused: var(--ion-color-danger);
+    
+    ion-input {
+      --color: var(--ion-color-danger);
+    }
+  }
+}
+

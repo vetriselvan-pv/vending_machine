@@ -76,28 +76,83 @@ export class LoginComponent implements OnInit {
       const url = environment.baseURL + environment.loginURL;
       this.httpProvider.httpPostRequest(url, this.loginForm.value).subscribe({
         next: async (res) => {
-          if (res?.data?.success) {
+          // Check response structure - CapacitorHttp wraps response in data property
+          const responseData = res?.data || res;
+
+          if (responseData?.success) {
+            // Store user details
             await Preferences.set({
               key: 'user_details',
-              value: JSON.stringify(res.data.data.user.employee)
+              value: JSON.stringify(responseData.data.user.employee)
             });
-            this.userDetails.userDetails.set(res.data.data.user.employee)
-            this.router.navigate(['/layout/dashboard'], { replaceUrl : true });
+
+            // Store JWT token
+            if (responseData.data.access_token) {
+              await Preferences.set({
+                key: 'auth_token',
+                value: responseData.data.access_token
+              });
+            }
+
+            // Store refresh token
+            if (responseData.data.refresh_token) {
+              await Preferences.set({
+                key: 'refresh_token',
+                value: responseData.data.refresh_token
+              });
+            }
+
+            // Store privileges FIRST before navigation
+            if (responseData.data.privileges && Array.isArray(responseData.data.privileges)) {
+              // Set privileges in service immediately
+              this.userDetails.privileges.set(responseData.data.privileges);
+              // Also store in Preferences for persistence
+              await Preferences.set({
+                key: 'user_privileges',
+                value: JSON.stringify(responseData.data.privileges)
+              });
+            } else {
+              // If no privileges, set empty array
+              this.userDetails.privileges.set([]);
+            }
+
+            // Set user details
+            this.userDetails.userDetails.set(responseData.data.user.employee);
+
+            // Navigate after privileges are set
+            this.router.navigate(['/layout/dashboard']);
           } else {
+            // Show the actual error message from API response
+            const errorMessage = responseData?.message || 'Login failed! Please try again';
             const toast = await this.toastController.create({
-              message: 'Login failed! Please Try again',
-              duration: 1500,
-              position: 'middle',
-              color: 'primary',
+              message: errorMessage,
+              duration: 2000,
+              position: 'top',
+              color: 'danger',
             });
             await toast.present();
           }
         },
         error: async (err: any) => {
+          // Try to extract error message from error response
+          let errorMessage = 'Login failed! Please try again';
+
+          // Check if error has a data property with message
+          if (err?.data?.message) {
+            errorMessage = err.data.message;
+          } else if (err?.data?.data?.message) {
+            errorMessage = err.data.data.message;
+          } else if (err?.message) {
+            errorMessage = err.message;
+          } else if (typeof err === 'string') {
+            errorMessage = err;
+          }
+
           const toast = await this.toastController.create({
-            message: 'Login failed! Please Try again',
-            duration: 1500,
+            message: errorMessage,
+            duration: 2000,
             position: 'top',
+            color: 'danger',
           });
           await toast.present();
         },

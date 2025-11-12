@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, input, model, OnInit, output, signal, viewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, input, model, OnInit, output, signal, viewChild, effect } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   IonSearchbar,
@@ -45,10 +45,21 @@ export class SearchableDropdownComponent implements OnInit {
     addIcons({
       searchCircle,
     });
+
+    // Watch for changes in items and update filteredItems
+    effect(() => {
+      const items = this.items();
+      if (items && items.length > 0) {
+        this.filteredItems.set([...items]);
+      }
+    });
   }
 
   ngOnInit() {
-    this.filteredItems.set([...this.items()]);
+    // Initialize filteredItems with current items
+    if (this.items() && this.items().length > 0) {
+      this.filteredItems.set([...this.items()]);
+    }
   }
 
   filterItems(event: any) {

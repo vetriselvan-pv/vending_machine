@@ -1,7 +1,7 @@
 <ion-content>
   <div class="grid-row">
     @for (menu of moreMenu; track $index) {
-    <ion-card class="col-6">
+    <ion-card class="col-6" (click)="navigateToRoute(menu.route)">
       <ion-card-content class="flex-center full-card-content">
         <ion-icon color="primary" aria-hidden="false" name="{{ menu.icon }}"></ion-icon>
         <ion-title color="primary">

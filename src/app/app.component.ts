@@ -55,9 +55,9 @@ export class AppComponent {
     this.setStatusBarColor();
   }
 
-  async setStatusBarColor(){
-       await StatusBar.setBackgroundColor({ color: '#3880ff' }); // Ionic primary blue
-    await StatusBar.setStyle({ style: Style.Light }); // or Style.Dark
+  async setStatusBarColor() {
+    await StatusBar?.setBackgroundColor({ color: '#3880ff' }); // Ionic primary blue
+    await StatusBar?.setStyle({ style: Style.Light }); // or Style.Dark
   }
 
   async showSplashScreen() {

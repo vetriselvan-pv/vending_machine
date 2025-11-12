@@ -8,7 +8,7 @@
           <!-- <h1 class="profile-initial">V</h1> -->
           <ion-avatar class="vm-profile-avatar">
             <img alt="avatar"
-              [src]="userDetails.userDetails()?.profile_photo || 'https://ionicframework.com/docs/img/demos/avatar.svg'" />
+              [src]="profilePhoto()" />
           </ion-avatar>
         </div>
       </div>
@@ -23,12 +23,12 @@
       </div>
 
       <div class="details-list">
-        @for (user of userDetail(); track user.id) {
+        @for (user of userDetail(); track user.key) {
         <div class="detail-item">
           <ion-grid class="detail-grid">
             <ion-row class="detail-row">
               <ion-col size="12" class="detail-label-col">
-                <ion-text class="detail-label">{{ user.id | titlecase }}</ion-text>
+                <ion-text class="detail-label">{{ user.label | titlecase }}</ion-text>
               </ion-col>
               <ion-col size="12" class="detail-value-col">
                 <ion-text class="detail-value">{{ user.value }}</ion-text>

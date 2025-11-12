@@ -1,10 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { IonContent, IonCard, IonCardContent, IonTitle, IonIcon } from '@ionic/angular/standalone';
+import { Router } from '@angular/router';
 import { addIcons } from 'ionicons';
 import {
   personOutline,
   duplicateOutline,
   cubeOutline,
+  informationCircleOutline,
 } from 'ionicons/icons';
 
 @Component({
@@ -30,15 +32,25 @@ export class MoreComponent implements OnInit {
       icon: 'person-outline',
       route: 'profile',
     },
+    {
+      name: 'About',
+      icon: 'information-circle-outline',
+      route: 'about',
+    },
   ];
 
-  constructor() {
+  constructor(private router: Router) {
     addIcons({
       personOutline,
       duplicateOutline,
       cubeOutline,
+      informationCircleOutline,
     });
   }
 
   ngOnInit() {}
+
+  navigateToRoute(route: string) {
+    this.router.navigate(['/layout', route]);
+  }
 }

@@ -1,10 +1,12 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './guard/auth.guard';
 
 export const routes: Routes = [
   {
     path: 'layout',
     loadComponent: () =>
       import('./common/layout/layout.component').then((m) => m.LayoutComponent),
+    canActivate: [authGuard],
     children: [
       {
         path: 'dashboard',
@@ -52,6 +54,11 @@ export const routes: Routes = [
         path: 'more',
         loadComponent: () =>
           import('./page/more/more.component').then((m) => m.MoreComponent),
+      },
+      {
+        path: 'about',
+        loadComponent: () =>
+          import('./page/about/about.component').then((m) => m.AboutComponent),
       },
     ],
   },

@@ -1,0 +1,190 @@
+<ion-modal [isOpen]="isOpen" (willDismiss)="closeModal()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Stock Availability</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closeModal()">
+            <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="ion-padding">
+      @if (availabilityData()) {
+        <ion-grid>
+          <!-- Customer and Date Info -->
+          <ion-row>
+            <ion-col size="12">
+              <ion-item lines="none">
+                <ion-label>
+                  <h2>{{ customerName }}</h2>
+                  <p>Date: {{ selectedDate }}</p>
+                </ion-label>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+
+          <!-- Date Picker -->
+          <ion-row>
+            <ion-col size="12">
+              <ion-item>
+                <ion-label position="stacked">Select Date</ion-label>
+                <ion-input 
+                  type="date" 
+                  [(ngModel)]="selectedDate"
+                  (ionChange)="onDateChange()"
+                  [ngModelOptions]="{standalone: true}">
+                </ion-input>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+
+          <!-- Products List -->
+          <ion-row>
+            <ion-col size="12">
+              <ion-text>
+                <h3>Products ({{ products().length }})</h3>
+              </ion-text>
+            </ion-col>
+          </ion-row>
+
+          @for (product of products(); track product.product_id) {
+            <ion-card class="product-card">
+              <ion-card-content>
+                <ion-grid>
+                  <!-- Product Header -->
+                  <ion-row>
+                    <ion-col size="12">
+                      <ion-text>
+                        <h4 class="product-title">{{ product.product_name }} ({{ product.product_code }})</h4>
+                        <p class="product-subtitle">{{ product.product_size }} {{ product.product_unit }}</p>
+                      </ion-text>
+                    </ion-col>
+                  </ion-row>
+
+                  <!-- Calculated Quantities Display (Same as EBMS) -->
+                  <ion-row class="quantities-row">
+                    <ion-col size="3">
+                      <div class="quantity-badge">
+                        <ion-text color="medium">
+                          <small class="quantity-label">Opening</small>
+                        </ion-text>
+                        <div class="badge-value badge-info">{{ product.opening_qty }}</div>
+                      </div>
+                    </ion-col>
+                    <ion-col size="3">
+                      <div class="quantity-badge">
+                        <ion-text color="medium">
+                          <small class="quantity-label">Stock In</small>
+                        </ion-text>
+                        <div class="badge-value badge-success">{{ product.stock_in_qty }}</div>
+                      </div>
+                    </ion-col>
+                    <ion-col size="3">
+                      <div class="quantity-badge">
+                        <ion-text color="medium">
+                          <small class="quantity-label">Stock Out</small>
+                        </ion-text>
+                        <div class="badge-value badge-danger">{{ product.stock_out_qty }}</div>
+                      </div>
+                    </ion-col>
+                    <ion-col size="3">
+                      <div class="quantity-badge">
+                        <ion-text color="medium">
+                          <small class="quantity-label">Available<br/>(Closing Stock)</small>
+                        </ion-text>
+                        <div class="badge-value badge-primary">{{ product.calculated_available_qty }}</div>
+                      </div>
+                    </ion-col>
+                  </ion-row>
+
+                  <!-- Closing Quantity Input -->
+                  <ion-row>
+                    <ion-col size="4">
+                      <div class="available-stock-display">
+                        <ion-text color="medium">
+                          <small class="available-label">Current Available Stock</small>
+                        </ion-text>
+                        <div class="available-value">
+                          <strong>{{ product.calculated_available_qty }}</strong>
+                          <span class="unit-text">{{ product.product_unit }}</span>
+                        </div>
+                      </div>
+                    </ion-col>
+                    <ion-col size="8">
+                      <ion-item class="closing-qty-item" [class.invalid]="!isClosingQtyValid(product.product_id)">
+                        <ion-label position="stacked">
+                          <strong>Closing Quantity</strong>
+                          <span class="required">*</span>
+                          <span class="max-hint">(Max: {{ product.calculated_available_qty }})</span>
+                        </ion-label>
+                        <ion-input
+                          type="number"
+                          [value]="product.closing_qty"
+                          [max]="product.calculated_available_qty"
+                          (ionInput)="updateClosingQty(product.product_id, $any($event.target).value)"
+                          placeholder="Enter closing quantity"
+                          min="0"
+                          step="0.01">
+                        </ion-input>
+                      </ion-item>
+                      @if (!isClosingQtyValid(product.product_id)) {
+                        <ion-text color="danger" class="error-text">
+                          <small>
+                            <ion-icon name="alert-circle-outline"></ion-icon>
+                            Closing quantity cannot exceed available quantity ({{ product.calculated_available_qty }})
+                          </small>
+                        </ion-text>
+                      } @else if (product.calculated_available_qty > 0) {
+                        <ion-text color="primary" class="info-text">
+                          <small>
+                            <ion-icon name="information-circle-outline"></ion-icon>
+                            Enter value ≤ {{ product.calculated_available_qty }} {{ product.product_unit }}
+                          </small>
+                        </ion-text>
+                      }
+                    </ion-col>
+                  </ion-row>
+
+                  <!-- Notes Input -->
+                  <ion-row>
+                    <ion-col size="12">
+                      <ion-item>
+                        <ion-label position="stacked">Notes (Optional)</ion-label>
+                        <ion-textarea
+                          [value]="product.notes || ''"
+                          (ionInput)="updateNotes(product.product_id, $any($event.target).value)"
+                          placeholder="Add notes..."
+                          rows="2">
+                        </ion-textarea>
+                      </ion-item>
+                    </ion-col>
+                  </ion-row>
+                </ion-grid>
+              </ion-card-content>
+            </ion-card>
+          }
+        </ion-grid>
+
+        <!-- Save Button -->
+        <ion-button 
+          expand="block" 
+          size="large" 
+          class="save-button"
+          (click)="saveAvailability()">
+          <ion-icon slot="start" name="save-outline"></ion-icon>
+          Save Stock Availability
+        </ion-button>
+      } @else {
+        <ion-item>
+          <ion-label>
+            <p>Loading stock availability data...</p>
+          </ion-label>
+        </ion-item>
+      }
+    </ion-content>
+  </ng-template>
+</ion-modal>
+

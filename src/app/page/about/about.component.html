@@ -1,0 +1,40 @@
+<ion-content class="about-content">
+  <div class="about-container">
+    <!-- App Logo/Icon Section -->
+    <ion-card class="logo-card">
+      <ion-card-content class="logo-content">
+        <ion-img
+          src="assets/image/eb-logo-red.svg"
+          alt="EB Connect Logo"
+          class="app-logo"
+        ></ion-img>
+        <ion-text color="primary">
+          <h1 class="app-name">EB Connect</h1>
+        </ion-text>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- App Information Section -->
+    <ion-card class="info-card">
+      <ion-card-content>
+        <div class="info-item">
+          <ion-text color="medium">
+            <p class="info-label">Version</p>
+          </ion-text>
+          <ion-text color="primary">
+            <p class="info-value">{{ appVersion }}</p>
+          </ion-text>
+        </div>
+        <div class="info-item">
+          <ion-text color="medium">
+            <p class="info-label">Developed by</p>
+          </ion-text>
+          <ion-text color="primary">
+            <p class="info-value developer-link" (click)="openDeveloperWebsite()">{{ developerName }}</p>
+          </ion-text>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>
+
