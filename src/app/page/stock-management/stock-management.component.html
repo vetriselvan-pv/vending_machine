@@ -1,6 +1,4 @@
 <ion-content [fullscreen]="true" class="stock-content">
-  <!-- Camera Notch Overlay -->
-  <div class="camera-notch-overlay"></div>
 
   <!-- Form Section -->
   <ion-card class="form-card">
@@ -10,12 +8,12 @@
           <!-- Product Selection -->
           <ion-row>
             <ion-col size="12">
-              <app-searchable-dropdown 
-                [itemIdField]="'id'" 
-                [placeholder]="'Select Product'" 
+              <app-searchable-dropdown
+                [itemIdField]="'id'"
+                [placeholder]="'Select Product'"
                 [label]="'Select Product'"
-                [items]="stocksList" 
-                itemValueField="id" 
+                [items]="stocksList"
+                itemValueField="id"
                 itemTextField="text"
                 (selectionChange)="onProductSelect($event)">
               </app-searchable-dropdown>
@@ -43,8 +41,8 @@
           <!-- Add Stock Button -->
           <ion-row>
             <ion-col size="12">
-              <ion-button 
-                expand="block" 
+              <ion-button
+                expand="block"
                 class="add-button"
                 (click)="addStock()"
                 [disabled]="!selectedProduct || !closingStock || closingStock <= 0">
@@ -78,8 +76,8 @@
                       <ion-text class="item-value">{{ stock.productName }}</ion-text>
                     </ion-col>
                     <ion-col size="4" class="ion-text-end">
-                      <ion-button 
-                        fill="clear" 
+                      <ion-button
+                        fill="clear"
                         size="small"
                         color="danger"
                         (click)="removeStock($index)">
@@ -127,10 +125,10 @@
   </ion-card>
 
   <!-- Submit Button -->
-  <ion-button 
-    type="submit" 
-    expand="block" 
-    size="large" 
+  <ion-button
+    type="submit"
+    expand="block"
+    size="large"
     class="submit-button"
     (click)="updateStock()"
     [disabled]="addedStocks().length === 0">

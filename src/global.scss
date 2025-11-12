@@ -142,6 +142,7 @@ ion-button {
   // Ensure page content fades in when tab changes
   ion-content {
     animation: fadeInContent 0.3s ease-in-out;
+    padding: var(--ion-padding, 16px)
   }
 }
 
@@ -157,48 +158,6 @@ body {
  padding-top: env(safe-area-inset-top, 0);
 }
 
-// Camera Notch Overlay - Common for all screens
-.camera-notch-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: calc(var(--ion-safe-area-top, 0) + env(safe-area-inset-top, 0));
-  min-height: var(--ion-safe-area-top, 0);
-  background: linear-gradient(
-    180deg,
-    rgba(245, 245, 245, 0.95) 0%,
-    rgba(245, 245, 245, 0.85) 50%,
-    rgba(245, 245, 245, 0.75) 100%
-  );
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  z-index: 1000;
-  pointer-events: none;
-
-  // Add additional blur effect
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.5);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-  }
-
-  // If no safe area, hide it
-  @supports (padding: max(0px)) {
-    height: max(var(--ion-safe-area-top, 0px), env(safe-area-inset-top, 0px));
-  }
-
-  // Hide on devices without notch
-  @media (min-width: 768px) {
-    display: none;
-  }
-}
 
 .border-item {
   --inner-padding-end: 0;

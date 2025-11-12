@@ -1,5 +1,5 @@
 import { TitleCasePipe } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { Preferences } from '@capacitor/preferences';
 import {
@@ -25,6 +25,12 @@ import {
   IonButton,
   IonAvatar,
   IonText,
+  Platform,
+  AlertController,
+  ModalController,
+  MenuController,
+  ActionSheetController,
+  PopoverController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -38,7 +44,7 @@ import {
   close,
   logOut,
 } from 'ionicons/icons';
-import { filter } from 'rxjs';
+import { filter, Subject, takeUntil } from 'rxjs';
 import { UserDetails } from 'src/app/service/user-details/user-details';
 
 @Component({
@@ -63,10 +69,10 @@ import { UserDetails } from 'src/app/service/user-details/user-details';
     IonMenuButton,
     IonRouterOutlet,
     IonTitle,
-    TitleCasePipe
+    TitleCasePipe,
   ],
 })
-export class LayoutComponent implements OnInit {
+export class LayoutComponent implements OnInit, OnDestroy {
   private _router = inject(Router);
   tabList = [
     {
@@ -107,6 +113,16 @@ export class LayoutComponent implements OnInit {
   activeRoute = '';
   protected userDetails = inject(UserDetails);
 
+  protected platform = inject(Platform);
+   private router= inject(Router);
+    private alertCtrl = inject(AlertController)
+    private modalCtrl = inject(ModalController)
+    private menuCtrl = inject(MenuController)
+    private actionSheetCtrl = inject(ActionSheetController)
+    private popoverCtrl = inject(PopoverController)
+
+  protected readonly _destroy$ = new Subject();
+
   constructor() {
     addIcons({
       homeOutline,
@@ -117,7 +133,7 @@ export class LayoutComponent implements OnInit {
       cubeOutline,
       ellipsisVertical,
       close,
-      logOut
+      logOut,
     });
 
     this._router.events
@@ -132,11 +148,11 @@ export class LayoutComponent implements OnInit {
           console.log(err);
         },
       });
+
+    this.platform.ready().then(() => this.hanldeBackNavigation());
   }
 
-  async ngOnInit() {
-
-  }
+  async ngOnInit() {}
 
   ontabClick(event: any, tab: { name: string; route: string }) {
     event.stopPropagation();
@@ -148,9 +164,21 @@ export class LayoutComponent implements OnInit {
     this.selectedMenu = tab.name;
     this._router.navigate(['layout', tab.route]);
   }
-  async onLogout(){
-      await Preferences.clear();
-     this._router.navigate(['login']);
+  async onLogout() {
+    await Preferences.clear();
+    this._router.navigate(['login']);
   }
 
+  hanldeBackNavigation() {
+    this.platform.backButton.pipe(takeUntil(this._destroy$)).subscribe({
+      next: () => {
+
+      },
+    });
+  }
+
+  ngOnDestroy(): void {
+    this._destroy$.next(null);
+    this._destroy$.complete();
+  }
 }

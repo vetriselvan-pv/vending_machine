@@ -57,7 +57,8 @@
       <!-- Profile / Brand header -->
       <div class="vm-header ion-padding">
         <ion-avatar class="vm-avatar">
-          <img alt="avatar" [src]="userDetails.userDetails()?.profile_photo || 'https://ionicframework.com/docs/img/demos/avatar.svg'"   />
+          <img alt="avatar"
+            [src]="userDetails.userDetails()?.profile_photo || 'https://ionicframework.com/docs/img/demos/avatar.svg'" />
         </ion-avatar>
         <div class="vm-title">
           <ion-text color="primary">
@@ -102,10 +103,10 @@
 </ion-menu>
 
 <div class="ion-page" id="main-content">
-  <ion-header>
+  <ion-header translucent="true">
     <ion-toolbar class="vm-toolbar">
       <ion-buttons slot="start">
-        <ion-menu-button  color="primary" ></ion-menu-button>
+        <ion-menu-button color="primary"></ion-menu-button>
       </ion-buttons>
       <ion-title color="primary" class="toolbar-title">{{ selectedMenu }}</ion-title>
     </ion-toolbar>

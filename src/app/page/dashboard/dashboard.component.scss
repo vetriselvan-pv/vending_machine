@@ -18,43 +18,6 @@
   }
 }
 
-.camera-notch-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: calc(var(--ion-safe-area-top, 0) + env(safe-area-inset-top, 0));
-  min-height: var(--ion-safe-area-top, 0);
-  background: linear-gradient(180deg, rgba(245, 245, 245, .95)0%, rgba(245, 245, 245, .85)50%, rgba(245, 245, 245, .75)100%);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  z-index: 1000;
-  pointer-events: none
-}
-
-@supports(padding:max(0px)) {
-  .camera-notch-overlay {
-    height: max(var(--ion-safe-area-top, 0px), env(safe-area-inset-top, 0px))
-  }
-}
-
-@media(min-width:768px) {
-  .camera-notch-overlay {
-    display: none
-  }
-}
-
-.camera-notch-overlay::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(255, 255, 255, .5);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px)
-}
 
 .header-card {
   margin: 0 0 1rem;
@@ -749,4 +712,10 @@ ion-col {
   ion-col {
     padding: .25rem
   }
+}
+
+.date-wrapper{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }

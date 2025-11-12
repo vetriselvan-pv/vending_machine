@@ -1,6 +1,4 @@
 <ion-content [fullscreen]="true" class="transfer-content">
-  <!-- Camera Notch Overlay -->
-  <div class="camera-notch-overlay"></div>
 
   <!-- Form Section -->
   <ion-card class="form-card">
@@ -10,12 +8,12 @@
           <!-- Transfer From -->
           <ion-row>
             <ion-col size="12">
-              <app-searchable-dropdown 
-                [itemIdField]="'id'" 
-                [placeholder]="'Select Transfer From'" 
+              <app-searchable-dropdown
+                [itemIdField]="'id'"
+                [placeholder]="'Select Transfer From'"
                 [label]="'Transfer From'"
-                [items]="transferFromArray" 
-                itemValueField="id" 
+                [items]="transferFromArray"
+                itemValueField="id"
                 itemTextField="text"
                 (selectionChange)="onTransferFromSelect($event)">
               </app-searchable-dropdown>
@@ -32,12 +30,12 @@
           <!-- Transfer To -->
           <ion-row>
             <ion-col size="12">
-              <app-searchable-dropdown 
-                [itemIdField]="'id'" 
-                [placeholder]="'Select Transfer To'" 
+              <app-searchable-dropdown
+                [itemIdField]="'id'"
+                [placeholder]="'Select Transfer To'"
                 [label]="'Transfer To'"
-                [items]="transferToArray" 
-                itemValueField="id" 
+                [items]="transferToArray"
+                itemValueField="id"
                 itemTextField="text"
                 (selectionChange)="onTransferToSelect($event)">
               </app-searchable-dropdown>
@@ -47,12 +45,12 @@
           <!-- Stock Items -->
           <ion-row>
             <ion-col size="12">
-              <app-searchable-dropdown 
-                [itemIdField]="'id'" 
-                [placeholder]="'Select Stock Item'" 
+              <app-searchable-dropdown
+                [itemIdField]="'id'"
+                [placeholder]="'Select Stock Item'"
                 [label]="'Stock Item'"
-                [items]="stockItemsArray" 
-                itemValueField="id" 
+                [items]="stockItemsArray"
+                itemValueField="id"
                 itemTextField="text"
                 (selectionChange)="onStockItemSelect($event)">
               </app-searchable-dropdown>
@@ -80,8 +78,8 @@
           <!-- Add Stock Button -->
           <ion-row>
             <ion-col size="12">
-              <ion-button 
-                expand="block" 
+              <ion-button
+                expand="block"
                 class="add-button"
                 (click)="addStock()"
                 [disabled]="!selectedTransferFrom || !selectedTransferTo || !selectedStockItem || !quantity || quantity <= 0">
@@ -115,8 +113,8 @@
                       <ion-text class="item-value">{{ stock.transferFrom }}</ion-text>
                     </ion-col>
                     <ion-col size="4" class="ion-text-end">
-                      <ion-button 
-                        fill="clear" 
+                      <ion-button
+                        fill="clear"
                         size="small"
                         color="danger"
                         (click)="removeStock($index)">
@@ -158,10 +156,10 @@
   </ion-card>
 
   <!-- Submit Button -->
-  <ion-button 
-    type="submit" 
-    expand="block" 
-    size="large" 
+  <ion-button
+    type="submit"
+    expand="block"
+    size="large"
     class="submit-button"
     (click)="onTransfer()"
     [disabled]="addedStocks().length === 0">

@@ -1,6 +1,4 @@
 <ion-content [fullscreen]="true" class="accept-delivery-content">
-  <!-- Camera Notch Overlay -->
-  <div class="camera-notch-overlay"></div>
 
   <!-- Pending Approvals Section -->
   <ion-card class="pending-card">
@@ -44,8 +42,8 @@
                   </ion-text>
                 </ion-col>
                 <ion-col size="1" class="data-col action-col">
-                  <ion-button 
-                    fill="clear" 
+                  <ion-button
+                    fill="clear"
                     size="small"
                     (click)="openDeliveryModal(delivery)"
                     class="view-button">
@@ -133,7 +131,7 @@
           </ion-buttons>
         </ion-toolbar>
       </ion-header>
-      
+
       <ion-content class="modal-content">
         @if(selectedDelivery()) {
           <div class="modal-info">
@@ -153,7 +151,7 @@
 
           <div class="products-section">
             <ion-text class="products-title">Products</ion-text>
-            
+
             @for (product of selectedDelivery()!.products; track product.productId; let i = $index) {
               <ion-card class="product-card">
                 <ion-card-content>
@@ -201,7 +199,7 @@
                     <!-- Accept/Reject Buttons -->
                     <ion-row class="product-row action-row">
                       <ion-col size="6">
-                        <ion-button 
+                        <ion-button
                           expand="block"
                           fill="outline"
                           color="success"
@@ -213,7 +211,7 @@
                         </ion-button>
                       </ion-col>
                       <ion-col size="6">
-                        <ion-button 
+                        <ion-button
                           expand="block"
                           fill="outline"
                           color="danger"
@@ -233,9 +231,9 @@
 
           <!-- Submit Button -->
           <div class="submit-section">
-            <ion-button 
-              expand="block" 
-              size="large" 
+            <ion-button
+              expand="block"
+              size="large"
               class="submit-button"
               (click)="submitDelivery()">
               <ion-text><strong>Submit</strong></ion-text>

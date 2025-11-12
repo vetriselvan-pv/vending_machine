@@ -82,7 +82,7 @@ export class LoginComponent implements OnInit {
               value: JSON.stringify(res.data.data.user.employee)
             });
             this.userDetails.userDetails.set(res.data.data.user.employee)
-            this.router.navigate(['/layout/dashboard']);
+            this.router.navigate(['/layout/dashboard'], { replaceUrl : true });
           } else {
             const toast = await this.toastController.create({
               message: 'Login failed! Please Try again',

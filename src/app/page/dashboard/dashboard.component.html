@@ -1,6 +1,4 @@
 <ion-content class="dashboard" fullscreen="true">
-  <!-- Camera Notch Overlay -->
-  <div class="camera-notch-overlay"></div>
   <!-- Header Card -->
   <ion-card class="header-card">
     <ion-card-content>
@@ -51,18 +49,18 @@
         <ion-row class="punch-row">
           <ion-col size="12" class="btn-content-col">
             <div class="btn-content">
-              <ion-button 
-                id="punch-in" 
-                color="primary" 
-                (click)="punchIn()" 
+              <ion-button
+                id="punch-in"
+                color="primary"
+                (click)="punchIn()"
                 class="punch-btn punch-in-btn"
                 [disabled]="isPunchedIn || !selectedCustomerId || (attendance && attendance.punchOutTime)">
                 Punch in
               </ion-button>
-              <ion-button 
-                id="punch-out" 
-                color="primary" 
-                (click)="punchOut()" 
+              <ion-button
+                id="punch-out"
+                color="primary"
+                (click)="punchOut()"
                 class="punch-btn punch-out-btn"
                 [disabled]="!isPunchedIn || (attendance && attendance.punchOutTime)">
                 Punch out
@@ -79,31 +77,31 @@
                       <span class="date-label">{{ getCurrentDate() }}</span>
                     </ion-text>
                   </div>
-                  
+
                   <!-- Status Display -->
                   <div class="status-text" *ngIf="!attendance">
                     <ion-text color="secondary">
                       <span class="status-label">User not yet Punched In</span>
                     </ion-text>
                   </div>
-                  
+
                   <!-- After Punch In -->
                   <div class="attendance-info" *ngIf="attendance">
                     <div class="customer-section" *ngIf="attendance.customerName">
                       <div class="customer-label-small">Customer</div>
                       <div class="customer-value">{{ attendance.customerName }}</div>
                     </div>
-                    
+
                     <div class="time-section" *ngIf="attendance.punchInTime">
                       <div class="time-label">Punch In Time</div>
                       <div class="time-value">{{ attendance.punchInTime }}</div>
                     </div>
-                    
+
                     <div class="time-section" *ngIf="attendance.punchOutTime">
                       <div class="time-label">Punch Out Time</div>
                       <div class="time-value">{{ attendance.punchOutTime }}</div>
                     </div>
-                    
+
                     <div class="current-time" *ngIf="isPunchedIn">
                       <div class="current-time-label">Current Time</div>
                       <div class="current-time-value">{{ getCurrentTime() }}</div>
@@ -120,12 +118,12 @@
 
   <!-- Attendance Calendar Card -->
   <ion-card class="date-card">
-    <ion-card-content>
-      <div class="calendar-header">
+    <ion-card-content class="date-wrapper">
+      <ion-text class="calendar-header">
         <h3 class="calendar-title">Attendance Calendar</h3>
-      </div>
-      <ion-datetime 
-        color="primary" 
+      </ion-text>
+      <ion-datetime
+        color="primary"
         presentation="date"
         [readonly]="true"
         [max]="getMaxDate()"

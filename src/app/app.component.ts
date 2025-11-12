@@ -2,7 +2,14 @@ import { Component, inject } from '@angular/core';
 import { NavigationStart, Router } from '@angular/router';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
 import { SplashScreen } from '@capacitor/splash-screen';
-import { IonHeader, IonButtons, IonButton, IonToolbar, IonIcon } from '@ionic/angular/standalone';
+import { StatusBar, Style } from '@capacitor/status-bar';
+import {
+  IonHeader,
+  IonButtons,
+  IonButton,
+  IonToolbar,
+  IonIcon,
+} from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-root',
@@ -29,7 +36,10 @@ export class AppComponent {
           const isNavigatingBack = this.navigationHistory.includes(event.url);
           // Add/remove classes on the root <html> element
           document.documentElement.classList.toggle('back', isNavigatingBack);
-          document.documentElement.classList.toggle('forward', !isNavigatingBack);
+          document.documentElement.classList.toggle(
+            'forward',
+            !isNavigatingBack
+          );
           if (!isNavigatingBack) {
             // It's a forward navigation, so add to history
             this.navigationHistory.push(event.url);
@@ -41,13 +51,19 @@ export class AppComponent {
         }
       }
     });
-    this.showSplashScreen()
+    this.showSplashScreen();
+    this.setStatusBarColor();
   }
 
-  async showSplashScreen(){
+  async setStatusBarColor(){
+       await StatusBar.setBackgroundColor({ color: '#3880ff' }); // Ionic primary blue
+    await StatusBar.setStyle({ style: Style.Light }); // or Style.Dark
+  }
+
+  async showSplashScreen() {
     await SplashScreen.show({
       showDuration: 3000,
-      autoHide: true
-    })
+      autoHide: true,
+    });
   }
 }
