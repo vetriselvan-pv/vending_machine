@@ -653,3 +653,23 @@ ion-input::placeholder {
   }
 }
 
+
+ion-app, ion-content, .ion-page {
+  padding-bottom: env(safe-area-inset-bottom);
+  /* fallback for older browsers */
+  padding-bottom: constant(safe-area-inset-bottom);
+}
+
+
+.html-loader .loading-wrapper {
+  background: transparent;
+  box-shadow: none;
+}
+
+.html-loader .loading-content::before {
+  content: url('./assets/icon/loader.svg');   // your GIF
+  display: block;
+  width: 80px;
+  height: 80px;
+  margin: auto;
+}

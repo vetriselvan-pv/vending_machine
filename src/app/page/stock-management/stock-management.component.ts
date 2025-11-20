@@ -28,6 +28,8 @@ import { ProductService } from 'src/app/service/product/product.service';
 import { AttendanceService } from 'src/app/service/attendance/attendance.service';
 import { StockAvailabilityService } from 'src/app/service/stock-availability/stock-availability.service';
 import { StockAvailabilityModalComponent } from 'src/app/common/stock-availability-modal/stock-availability-modal.component';
+import { Toast } from 'src/app/service/toast/toast';
+import { Loader } from 'src/app/service/loader/loader';
 
 interface StockItem {
   productId: string;
@@ -55,7 +57,9 @@ interface StockItem {
     IonText,
     IonLabel,
     IonItem,
-    IonInput
+    IonInput,
+    IonSelect,
+    IonSelectOption,
   ],
 })
 export class StockManagementComponent implements OnInit, ViewWillEnter {
@@ -63,8 +67,8 @@ export class StockManagementComponent implements OnInit, ViewWillEnter {
   private productService = inject(ProductService);
   private attendanceService = inject(AttendanceService);
   private stockAvailabilityService = inject(StockAvailabilityService);
-  private toastController = inject(ToastController);
-  private loadingController = inject(LoadingController);
+  private toast = inject(Toast);
+  private loader = inject(Loader);
 
   addedStocks = signal<StockItem[]>([]);
   selectedProduct: any = null;
@@ -206,12 +210,12 @@ export class StockManagementComponent implements OnInit, ViewWillEnter {
     this.selectedMachineId = null;
     this.machineReading = '';
 
-    this.showToast('Machine reading added successfully', 'success');
+    this.toast.showSuccess('Machine reading added successfully');
   }
 
   removeMachineReading(machineId: number) {
     this.machineReadings.delete(machineId);
-    this.showToast('Machine reading removed', 'success');
+    this.toast.showSuccess('Machine reading removed');
   }
 
   getMachineName(machineId: number): string {
@@ -224,11 +228,9 @@ export class StockManagementComponent implements OnInit, ViewWillEnter {
   }
 
   async loadProducts() {
-    const loading = await this.loadingController.create({
-      message: 'Loading products...',
-      spinner: 'crescent'
-    });
-    await loading.present();
+
+
+    await this.loader.show('Loading products...','product')
 
     try {
       const response = await this.productService.getProducts({
@@ -252,16 +254,16 @@ export class StockManagementComponent implements OnInit, ViewWillEnter {
         }));
       } else {
         console.error('Failed to load products - Invalid response structure:', responseData);
-        await this.showToast('Failed to load products', 'danger');
+        await this.toast.showFailure('Failed to load products');
       }
     } catch (error: any) {
       console.error('Error loading products:', error);
       // Auth errors are handled by interceptor
       if (error?.status !== 401 && error?.status !== 403) {
-        await this.showToast('Error loading products. Please try again.', 'danger');
+        await this.toast.showFailure('Error loading products. Please try again.');
       }
     } finally {
-      await loading.dismiss();
+      await this.loader.hide('product');
     }
   }
 
@@ -274,11 +276,7 @@ export class StockManagementComponent implements OnInit, ViewWillEnter {
       return;
     }
 
-    const loading = await this.loadingController.create({
-      message: 'Loading products with stock data...',
-      spinner: 'crescent'
-    });
-    await loading.present();
+    this.loader.show('Loading products with stock data...','stock')
 
     try {
       // Get today's date in YYYY-MM-DD format
@@ -317,7 +315,7 @@ export class StockManagementComponent implements OnInit, ViewWillEnter {
         });
       } else {
         console.error('Failed to load products with stock data - Invalid response structure:', responseData);
-        await this.showToast('Failed to load products with stock data', 'danger');
+        await this.toast.showFailure('Failed to load products with stock data');
         // Fallback to regular product loading
         await this.loadProducts();
       }
@@ -325,12 +323,12 @@ export class StockManagementComponent implements OnInit, ViewWillEnter {
       console.error('Error loading products with stock data:', error);
       // Auth errors are handled by interceptor
       if (error?.status !== 401 && error?.status !== 403) {
-        await this.showToast('Error loading products with stock data. Please try again.', 'danger');
+        await this.toast.showFailure('Error loading products with stock data. Please try again.');
         // Fallback to regular product loading
         await this.loadProducts();
       }
     } finally {
-      await loading.dismiss();
+      await this.loader.hide('stock')
     }
   }
 
@@ -381,15 +379,7 @@ export class StockManagementComponent implements OnInit, ViewWillEnter {
     }
   }
 
-  async showToast(message: string, color: 'success' | 'danger' | 'warning' = 'success') {
-    const toast = await this.toastController.create({
-      message,
-      duration: 2000,
-      position: 'top',
-      color
-    });
-    await toast.present();
-  }
+
 
   onProductSelect(product: any) {
     this.selectedProduct = product;
@@ -409,9 +399,8 @@ export class StockManagementComponent implements OnInit, ViewWillEnter {
 
       // Validate: closing stock should not exceed current available quantity
       if (this.closingStock > currentAvailableQty) {
-        await this.showToast(
-          `Closing stock (${this.closingStock}) cannot exceed current available quantity (${currentAvailableQty} ${stockData.product_unit}) for ${stockData.product_name}`,
-          'danger'
+        await this.toast.showFailure(
+          `Closing stock (${this.closingStock}) cannot exceed current available quantity (${currentAvailableQty} ${stockData.product_unit}) for ${stockData.product_name}`
         );
         return; // Don't add stock if validation fails
       }
@@ -433,7 +422,7 @@ export class StockManagementComponent implements OnInit, ViewWillEnter {
           };
           return updated;
         });
-      await this.showToast('Stock updated successfully', 'success');
+      await this.toast.showSuccess('Stock updated successfully');
       } else {
         // Add new stock
         this.addedStocks.update(stocks => [
@@ -444,7 +433,7 @@ export class StockManagementComponent implements OnInit, ViewWillEnter {
             closingStock: this.closingStock!
           }
         ]);
-      await this.showToast('Stock added successfully', 'success');
+      await this.toast.showSuccess('Stock added successfully');
       }
 
       // Reset form (but keep machine reading)
@@ -458,20 +447,16 @@ export class StockManagementComponent implements OnInit, ViewWillEnter {
 
   async updateStock() {
     if (this.addedStocks().length === 0) {
-      await this.showToast('Please add at least one product with closing stock', 'warning');
+      await this.toast.showWarning('Please add at least one product with closing stock');
       return;
     }
 
     if (!this.selectedCustomerId) {
-      await this.showToast('Please select a customer first', 'warning');
+      await this.toast.showWarning('Please select a customer first');
       return;
     }
 
-    const loading = await this.loadingController.create({
-      message: 'Saving closing stocks...',
-      spinner: 'crescent'
-    });
-    await loading.present();
+    await  this.loader.show("Saving closing stocks...",'updateStock')
 
     try {
       // Get current date and time
@@ -521,7 +506,7 @@ export class StockManagementComponent implements OnInit, ViewWillEnter {
       const responseData = response?.data;
 
       if (responseData?.success) {
-        await this.showToast('Closing stocks saved successfully!', 'success');
+        await this.toast.showSuccess('Closing stocks saved successfully!');
 
         // Clear the added stocks list and machine readings
         this.addedStocks.set([]);
@@ -538,7 +523,7 @@ export class StockManagementComponent implements OnInit, ViewWillEnter {
         }
       } else {
         const errorMessage = responseData?.message || 'Failed to save closing stocks';
-        await this.showToast(errorMessage, 'danger');
+        await this.toast.showFailure(errorMessage);
       }
     } catch (error: any) {
       console.error('Error saving closing stocks:', error);
@@ -551,10 +536,10 @@ export class StockManagementComponent implements OnInit, ViewWillEnter {
       }
 
       if (error?.status !== 401 && error?.status !== 403) {
-        await this.showToast(errorMessage, 'danger');
+        await this.toast.showFailure(errorMessage);
       }
     } finally {
-      await loading.dismiss();
+      await this.loader.hide('updateStock');
     }
   }
 

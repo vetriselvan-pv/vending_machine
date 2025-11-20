@@ -1,17 +1,14 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import {
-  IonContent,
-  IonButton,
-  IonIcon,
-} from '@ionic/angular/standalone';
+import { IonContent, IonButton, IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
   chevronForwardOutline,
   chevronBackOutline,
   closeOutline,
 } from 'ionicons/icons';
+import { LocalStorage } from 'src/app/service/local-storage/local-storage';
 
 interface OnboardingSlide {
   title: string;
@@ -23,44 +20,44 @@ interface OnboardingSlide {
   selector: 'app-onboarding',
   templateUrl: './onboarding.component.html',
   styleUrls: ['./onboarding.component.scss'],
-  imports: [
-    IonContent,
-    IonButton,
-    IonIcon,
-    CommonModule,
-  ],
+  imports: [IonContent, IonButton, IonIcon, CommonModule],
 })
 export class OnboardingComponent implements OnInit {
   private router = inject(Router);
-  
+  private localStorage = inject(LocalStorage);
+
   currentSlideIndex = 0;
   slidesLength = 4;
-  
+
   // Touch/swipe handling
   touchStartX = 0;
   touchStartY = 0;
   touchEndX = 0;
   touchEndY = 0;
-  
+
   onboardingSlides: OnboardingSlide[] = [
     {
       title: 'Attendance Management',
-      description: 'Track daily attendance with punch in/out features. Monitor operator and supervisor attendance efficiently.',
+      description:
+        'Track daily attendance with punch in/out features. Monitor operator and supervisor attendance efficiently.',
       image: 'assets/image/employee-attendance.png',
     },
     {
       title: 'Stock Maintenance',
-      description: 'Manage inventory and stock levels in real-time. Keep track of product availability and stock movements.',
+      description:
+        'Manage inventory and stock levels in real-time. Keep track of product availability and stock movements.',
       image: 'assets/image/stock-mgmt.png',
     },
     {
       title: 'Customer Management',
-      description: 'Maintain customer records and track interactions. Manage customer relationships effectively.',
+      description:
+        'Maintain customer records and track interactions. Manage customer relationships effectively.',
       image: 'assets/image/customer-stall.png',
     },
     {
       title: 'Machine Maintenance',
-      description: 'Schedule and track machine maintenance tasks. Ensure equipment is running smoothly and efficiently.',
+      description:
+        'Schedule and track machine maintenance tasks. Ensure equipment is running smoothly and efficiently.',
       image: 'assets/image/coffee machine.png',
     },
   ];
@@ -119,9 +116,12 @@ export class OnboardingComponent implements OnInit {
     const deltaX = this.touchEndX - this.touchStartX;
     const deltaY = this.touchEndY - this.touchStartY;
     const minSwipeDistance = 50; // Minimum distance for a swipe
-    
+
     // Check if horizontal swipe is greater than vertical swipe
-    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
+    if (
+      Math.abs(deltaX) > Math.abs(deltaY) &&
+      Math.abs(deltaX) > minSwipeDistance
+    ) {
       if (deltaX > 0) {
         // Swipe right - go to previous slide
         this.previousSlide();
@@ -130,6 +130,7 @@ export class OnboardingComponent implements OnInit {
         if (this.currentSlideIndex < this.slidesLength - 1) {
           this.nextSlide();
         } else {
+          this.localStorage.set('userFirstTime', 'true');
           // Last slide - navigate to login
           this.router.navigate(['/login']);
         }
@@ -137,4 +138,3 @@ export class OnboardingComponent implements OnInit {
     }
   }
 }
-

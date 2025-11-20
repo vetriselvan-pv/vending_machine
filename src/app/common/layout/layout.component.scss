@@ -327,3 +327,40 @@ ion-content::part(scroll) {
     position: relative;
   }
 }
+
+
+ion-header.box {
+    position: relative;
+    z-index: 10;
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);
+}
+
+ion-header.box::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  // background: linear-gradient(90deg, #ff6b6b, #f8c471, #6be7c0, #6b73ff, #ff6b6b);
+  background: linear-gradient(
+  90deg,
+  #ff0000,
+  #ff3d00,
+  #ff5e5e,
+  #ff1a40,
+  #cc0000,
+  #ff0000
+);
+
+  background-size: 300% 100%;
+  animation: gradientLine 6s linear infinite;
+  filter: blur(3px);
+  z-index: -1;
+}
+
+@keyframes gradientLine {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}

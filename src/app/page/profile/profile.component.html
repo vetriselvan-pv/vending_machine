@@ -22,22 +22,32 @@
         <ion-text class="details-title">User Details</ion-text>
       </div>
 
-      <div class="details-list">
-        @for (user of userDetail(); track user.key) {
-        <div class="detail-item">
-          <ion-grid class="detail-grid">
-            <ion-row class="detail-row">
-              <ion-col size="12" class="detail-label-col">
-                <ion-text class="detail-label">{{ user.label | titlecase }}</ion-text>
-              </ion-col>
-              <ion-col size="12" class="detail-value-col">
-                <ion-text class="detail-value">{{ user.value }}</ion-text>
-              </ion-col>
-            </ion-row>
-          </ion-grid>
+      @if(isLoading()) {
+        <div class="loading-section">
+          <ion-text>Loading profile...</ion-text>
         </div>
-        }
-      </div>
+      } @else if(profileData()) {
+        <div class="details-list">
+          @for (field of userDetail(); track field.key) {
+          <div class="detail-item">
+            <ion-grid class="detail-grid">
+              <ion-row class="detail-row">
+                <ion-col size="12" class="detail-label-col">
+                  <ion-text class="detail-label">{{ field.label }}</ion-text>
+                </ion-col>
+                <ion-col size="12" class="detail-value-col">
+                  <ion-text class="detail-value">{{ field.value }}</ion-text>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+          </div>
+          }
+        </div>
+      } @else {
+        <div class="empty-section">
+          <ion-text>Failed to load profile information.</ion-text>
+        </div>
+      }
     </ion-card-content>
   </ion-card>
 

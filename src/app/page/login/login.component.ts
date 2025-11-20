@@ -8,6 +8,7 @@ import {
   IonIcon,
   IonImg,
   ToastController,
+  LoadingController,
 } from '@ionic/angular/standalone';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { addIcons } from 'ionicons';
@@ -24,6 +25,7 @@ import { HttpRequest } from 'src/app/service/http-request/http-request';
 import { environment } from 'src/environments/environment';
 import { Preferences } from '@capacitor/preferences';
 import { UserDetails } from 'src/app/service/user-details/user-details';
+import { Loader } from 'src/app/service/loader/loader';
 
 @Component({
   selector: 'app-login',
@@ -47,6 +49,7 @@ export class LoginComponent implements OnInit {
   private httpProvider = inject(HttpRequest);
   private toastController = inject(ToastController);
   protected userDetails = inject(UserDetails);
+  private loader = inject(Loader);
 
   showPassword = false;
 
@@ -73,6 +76,7 @@ export class LoginComponent implements OnInit {
 
   async login() {
     if (this.loginForm.valid) {
+      this.loader.show('Logging In...','login');
       const url = environment.baseURL + environment.loginURL;
       this.httpProvider.httpPostRequest(url, this.loginForm.value).subscribe({
         next: async (res) => {
@@ -83,14 +87,14 @@ export class LoginComponent implements OnInit {
             // Store user details
             await Preferences.set({
               key: 'user_details',
-              value: JSON.stringify(responseData.data.user.employee)
+              value: JSON.stringify(responseData.data.user.employee),
             });
 
             // Store JWT token
             if (responseData.data.access_token) {
               await Preferences.set({
                 key: 'auth_token',
-                value: responseData.data.access_token
+                value: responseData.data.access_token,
               });
             }
 
@@ -98,18 +102,21 @@ export class LoginComponent implements OnInit {
             if (responseData.data.refresh_token) {
               await Preferences.set({
                 key: 'refresh_token',
-                value: responseData.data.refresh_token
+                value: responseData.data.refresh_token,
               });
             }
 
             // Store privileges FIRST before navigation
-            if (responseData.data.privileges && Array.isArray(responseData.data.privileges)) {
+            if (
+              responseData.data.privileges &&
+              Array.isArray(responseData.data.privileges)
+            ) {
               // Set privileges in service immediately
               this.userDetails.privileges.set(responseData.data.privileges);
               // Also store in Preferences for persistence
               await Preferences.set({
                 key: 'user_privileges',
-                value: JSON.stringify(responseData.data.privileges)
+                value: JSON.stringify(responseData.data.privileges),
               });
             } else {
               // If no privileges, set empty array
@@ -118,12 +125,13 @@ export class LoginComponent implements OnInit {
 
             // Set user details
             this.userDetails.userDetails.set(responseData.data.user.employee);
-
+            this.loader.hide('login');
             // Navigate after privileges are set
             this.router.navigate(['/layout/dashboard']);
           } else {
             // Show the actual error message from API response
-            const errorMessage = responseData?.message || 'Login failed! Please try again';
+            const errorMessage =
+              responseData?.message || 'Login failed! Please try again';
             const toast = await this.toastController.create({
               message: errorMessage,
               duration: 2000,

@@ -15,16 +15,22 @@ import {
   IonItem,
   IonInput,
   ToastController,
-  LoadingController
+  LoadingController,
 } from '@ionic/angular/standalone';
 import { ViewWillEnter } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { addIcons } from 'ionicons';
-import { gitCompareOutline, trashOutline, addCircleOutline } from 'ionicons/icons';
+import {
+  gitCompareOutline,
+  trashOutline,
+  addCircleOutline,
+} from 'ionicons/icons';
 import { SearchableDropdownComponent } from 'src/app/common/searchable-dropdown/searchable-dropdown.component';
 import { StockTransferService } from 'src/app/service/stock-transfer/stock-transfer.service';
 import { AttendanceService } from 'src/app/service/attendance/attendance.service';
 import { StockAvailabilityService } from 'src/app/service/stock-availability/stock-availability.service';
+import { Toast } from 'src/app/service/toast/toast';
+import { Loader } from 'src/app/service/loader/loader';
 
 interface TransferItem {
   transferFrom: string;
@@ -64,8 +70,8 @@ export class TransferComponent implements OnInit, ViewWillEnter {
   private stockTransferService = inject(StockTransferService);
   private attendanceService = inject(AttendanceService);
   private stockAvailabilityService = inject(StockAvailabilityService);
-  private toastController = inject(ToastController);
-  private loadingController = inject(LoadingController);
+  private toast = inject(Toast);
+  private loader = inject(Loader);
 
   addedStocks = signal<TransferItem[]>([]);
   selectedTransferFrom: any = null;
@@ -93,7 +99,7 @@ export class TransferComponent implements OnInit, ViewWillEnter {
     addIcons({
       gitCompareOutline,
       trashOutline,
-      addCircleOutline
+      addCircleOutline,
     });
   }
 
@@ -121,7 +127,7 @@ export class TransferComponent implements OnInit, ViewWillEnter {
         this.loadTransferFromCustomers(),
         this.loadTransferToCustomers(),
         this.loadProducts(),
-        this.loadPreviousTransfers()
+        this.loadPreviousTransfers(),
       ]);
       this.isDataLoaded = true;
     } catch (error) {
@@ -149,25 +155,27 @@ export class TransferComponent implements OnInit, ViewWillEnter {
       // Get transfers before today (previous transfers)
       const response = await this.stockTransferService.getTransfers({
         date_to: todayStr,
-        per_page: 50 // Get last 50 transfers
+        per_page: 50, // Get last 50 transfers
       });
 
       const responseData = response?.data;
-      
+
       if (responseData?.success && responseData?.data?.data) {
         // Filter to only show transfers before today (not including today)
-        this.previousTransfers = responseData.data.data.filter((transfer: any) => {
-          if (!transfer.t_date) return false;
-          
-          // Parse transfer date (handle different formats)
-          let transferDateStr = transfer.t_date;
-          if (transferDateStr.includes('T')) {
-            transferDateStr = transferDateStr.split('T')[0];
+        this.previousTransfers = responseData.data.data.filter(
+          (transfer: any) => {
+            if (!transfer.t_date) return false;
+
+            // Parse transfer date (handle different formats)
+            let transferDateStr = transfer.t_date;
+            if (transferDateStr.includes('T')) {
+              transferDateStr = transferDateStr.split('T')[0];
+            }
+
+            // Compare dates (YYYY-MM-DD format)
+            return transferDateStr < todayStr;
           }
-          
-          // Compare dates (YYYY-MM-DD format)
-          return transferDateStr < todayStr;
-        });
+        );
       } else {
         this.previousTransfers = [];
       }
@@ -185,11 +193,14 @@ export class TransferComponent implements OnInit, ViewWillEnter {
       // Load only assigned customers for "Transfer From"
       const response = await this.attendanceService.getMyAssignedCustomers();
       const responseData = response?.data;
-      
+
       if (responseData?.success && responseData?.data) {
         this.transferFromArray = responseData.data.map((customer: any) => ({
           id: String(customer.id),
-          text: customer.company_name || customer.name || 'Customer #' + customer.id
+          text:
+            customer.company_name ||
+            customer.name ||
+            'Customer #' + customer.id,
         }));
       } else {
         this.transferFromArray = [];
@@ -199,7 +210,9 @@ export class TransferComponent implements OnInit, ViewWillEnter {
       this.transferFromArray = [];
       // Auth errors are handled by interceptor
       if (error?.status !== 401 && error?.status !== 403) {
-        await this.showToast('Error loading assigned customers. Please try again.', 'danger');
+        await this.toast.showFailure(
+          'Error loading assigned customers. Please try again.'
+        );
       }
     }
   }
@@ -209,11 +222,14 @@ export class TransferComponent implements OnInit, ViewWillEnter {
       // Load all customers for "Transfer To"
       const response = await this.stockTransferService.getCustomers();
       const responseData = response?.data;
-      
+
       if (responseData?.success && responseData?.data) {
         this.transferToArray = responseData.data.map((customer: any) => ({
           id: String(customer.id),
-          text: customer.company_name || customer.name || 'Customer #' + customer.id
+          text:
+            customer.company_name ||
+            customer.name ||
+            'Customer #' + customer.id,
         }));
       } else {
         this.transferToArray = [];
@@ -223,7 +239,9 @@ export class TransferComponent implements OnInit, ViewWillEnter {
       this.transferToArray = [];
       // Auth errors are handled by interceptor
       if (error?.status !== 401 && error?.status !== 403) {
-        await this.showToast('Error loading customers. Please try again.', 'danger');
+        await this.toast.showFailure(
+          'Error loading customers. Please try again.'
+        );
       }
     }
   }
@@ -232,11 +250,17 @@ export class TransferComponent implements OnInit, ViewWillEnter {
     try {
       const response = await this.stockTransferService.getProducts();
       const responseData = response?.data;
-      
+
       if (responseData?.success && responseData?.data) {
         this.stockItemsArray = responseData.data.map((product: any) => ({
           id: String(product.id),
-          text: `${product.name}${product.code ? ' (' + product.code + ')' : ''}${product.size && product.unit ? ' - ' + product.size + ' ' + product.unit : ''}`
+          text: `${product.name}${
+            product.code ? ' (' + product.code + ')' : ''
+          }${
+            product.size && product.unit
+              ? ' - ' + product.size + ' ' + product.unit
+              : ''
+          }`,
         }));
       } else {
         this.stockItemsArray = [];
@@ -246,19 +270,11 @@ export class TransferComponent implements OnInit, ViewWillEnter {
       this.stockItemsArray = [];
       // Auth errors are handled by interceptor
       if (error?.status !== 401 && error?.status !== 403) {
-        await this.showToast('Error loading products. Please try again.', 'danger');
+        await this.toast.showFailure(
+          'Error loading products. Please try again.'
+        );
       }
     }
-  }
-
-  async showToast(message: string, color: 'success' | 'danger' | 'warning' = 'success') {
-    const toast = await this.toastController.create({
-      message,
-      duration: 2000,
-      position: 'top',
-      color
-    });
-    await toast.present();
   }
 
   async onTransferFromSelect(item: any) {
@@ -277,8 +293,11 @@ export class TransferComponent implements OnInit, ViewWillEnter {
   onTransferToSelect(item: any) {
     this.selectedTransferTo = item;
     // Validate that transfer from and to are different
-    if (this.selectedTransferFrom && this.selectedTransferFrom.id === this.selectedTransferTo.id) {
-      this.showToast('Transfer from and transfer to must be different', 'warning');
+    if (
+      this.selectedTransferFrom &&
+      this.selectedTransferFrom.id === this.selectedTransferTo.id
+    ) {
+      this.toast.showWarning('Transfer from and transfer to must be different');
       this.selectedTransferTo = null;
     }
   }
@@ -312,14 +331,23 @@ export class TransferComponent implements OnInit, ViewWillEnter {
       const dateStr = `${year}-${month}-${day}`;
 
       // Get stock availability data for this customer and product
-      const response = await this.stockAvailabilityService.getAvailabilityDataSimple(customerId, dateStr);
+      const response =
+        await this.stockAvailabilityService.getAvailabilityDataSimple(
+          customerId,
+          dateStr
+        );
       const responseData = response?.data;
 
       if (responseData?.success && responseData?.data?.products) {
-        const product = responseData.data.products.find((p: any) => p.product_id === productId);
-        
+        const product = responseData.data.products.find(
+          (p: any) => p.product_id === productId
+        );
+
         if (product) {
-          this.currentAvailableQty = product.calculated_available_qty || product.current_available_qty || 0;
+          this.currentAvailableQty =
+            product.calculated_available_qty ||
+            product.current_available_qty ||
+            0;
           this.productUnit = product.product_unit || '';
         } else {
           this.currentAvailableQty = 0;
@@ -338,32 +366,43 @@ export class TransferComponent implements OnInit, ViewWillEnter {
   }
 
   async addStock() {
-    if (this.selectedTransferFrom && this.selectedTransferTo && this.selectedStockItem && this.quantity && this.quantity > 0) {
+    if (
+      this.selectedTransferFrom &&
+      this.selectedTransferTo &&
+      this.selectedStockItem &&
+      this.quantity &&
+      this.quantity > 0
+    ) {
       // Check if transfer from and to are different
       if (this.selectedTransferFrom.id === this.selectedTransferTo.id) {
-        await this.showToast('Transfer from and transfer to must be different', 'warning');
+        await this.toast.showWarning(
+          'Transfer from and transfer to must be different'
+        );
         return;
       }
 
       // Validate quantity doesn't exceed available stock
-      if (this.currentAvailableQty !== null && this.quantity > this.currentAvailableQty) {
-        await this.showToast(
-          `Quantity (${this.quantity}) cannot exceed available stock (${this.currentAvailableQty} ${this.productUnit})`,
-          'danger'
+      if (
+        this.currentAvailableQty !== null &&
+        this.quantity > this.currentAvailableQty
+      ) {
+        await this.toast.showWarning(
+          `Quantity (${this.quantity}) cannot exceed available stock (${this.currentAvailableQty} ${this.productUnit})`
         );
         return;
       }
 
       // Check if same transfer already exists
       const existingIndex = this.addedStocks().findIndex(
-        stock => stock.transferFromId === parseInt(this.selectedTransferFrom.id) &&
-                 stock.transferToId === parseInt(this.selectedTransferTo.id) &&
-                 stock.stockItemId === this.selectedStockItem.id
+        (stock) =>
+          stock.transferFromId === parseInt(this.selectedTransferFrom.id) &&
+          stock.transferToId === parseInt(this.selectedTransferTo.id) &&
+          stock.stockItemId === this.selectedStockItem.id
       );
 
       if (existingIndex >= 0) {
         // Update existing transfer
-        this.addedStocks.update(stocks => {
+        this.addedStocks.update((stocks) => {
           const updated = [...stocks];
           updated[existingIndex] = {
             transferFrom: this.selectedTransferFrom.text,
@@ -372,14 +411,14 @@ export class TransferComponent implements OnInit, ViewWillEnter {
             transferToId: parseInt(this.selectedTransferTo.id),
             stockItemId: this.selectedStockItem.id,
             stockName: this.selectedStockItem.text,
-            quantity: this.quantity!
+            quantity: this.quantity!,
           };
           return updated;
         });
-        this.showToast('Stock transfer updated successfully', 'success');
+        this.toast.showSuccess('Stock transfer updated successfully');
       } else {
         // Add new transfer
-        this.addedStocks.update(stocks => [
+        this.addedStocks.update((stocks) => [
           ...stocks,
           {
             transferFrom: this.selectedTransferFrom.text,
@@ -388,10 +427,10 @@ export class TransferComponent implements OnInit, ViewWillEnter {
             transferToId: parseInt(this.selectedTransferTo.id),
             stockItemId: this.selectedStockItem.id,
             stockName: this.selectedStockItem.text,
-            quantity: this.quantity!
-          }
+            quantity: this.quantity!,
+          },
         ]);
-        this.showToast('Stock added to transfer list', 'success');
+        this.toast.showSuccess('Stock added to transfer list');
       }
 
       // Reset form
@@ -401,20 +440,18 @@ export class TransferComponent implements OnInit, ViewWillEnter {
   }
 
   removeStock(index: number) {
-    this.addedStocks.update(stocks => stocks.filter((_, i) => i !== index));
+    this.addedStocks.update((stocks) => stocks.filter((_, i) => i !== index));
   }
 
   async onTransfer() {
     if (this.addedStocks().length === 0) {
-      await this.showToast('Please add at least one stock item to transfer', 'warning');
+      await this.toast.showWarning(
+        'Please add at least one stock item to transfer'
+      );
       return;
     }
 
-    const loading = await this.loadingController.create({
-      message: 'Saving stock transfer...',
-      spinner: 'crescent'
-    });
-    await loading.present();
+    await this.loader.show('Saving stock transfer...','transfer');
 
     try {
       // Get current date in YYYY-MM-DD format
@@ -426,8 +463,8 @@ export class TransferComponent implements OnInit, ViewWillEnter {
 
       // Group transfers by from/to customer combination
       const transferGroups = new Map<string, TransferItem[]>();
-      
-      this.addedStocks().forEach(stock => {
+
+      this.addedStocks().forEach((stock) => {
         const key = `${stock.transferFromId}_${stock.transferToId}`;
         if (!transferGroups.has(key)) {
           transferGroups.set(key, []);
@@ -439,32 +476,36 @@ export class TransferComponent implements OnInit, ViewWillEnter {
       const results = [];
       for (const [key, stocks] of transferGroups.entries()) {
         const [fromCustomerId, toCustomerId] = key.split('_').map(Number);
-        
+
         const requestData = {
           from_customer_id: fromCustomerId,
           to_customer_id: toCustomerId,
           t_date: dateStr,
-          products: stocks.map(stock => ({
+          products: stocks.map((stock) => ({
             product_id: parseInt(stock.stockItemId),
-            stock_qty: stock.quantity
-          }))
+            stock_qty: stock.quantity,
+          })),
         };
 
-        const response = await this.stockTransferService.createTransfer(requestData);
+        const response = await this.stockTransferService.createTransfer(
+          requestData
+        );
         const responseData = response?.data;
-        
+
         if (responseData?.success) {
           results.push(true);
         } else {
           results.push(false);
-          throw new Error(responseData?.message || 'Failed to save stock transfer');
+          throw new Error(
+            responseData?.message || 'Failed to save stock transfer'
+          );
         }
       }
 
-      await loading.dismiss();
-      
-      if (results.every(r => r === true)) {
-        await this.showToast('Stock transfer saved successfully!', 'success');
+      await this.loader.hide('transfer');
+
+      if (results.every((r) => r === true)) {
+        await this.toast.showSuccess('Stock transfer saved successfully!');
         // Clear the added stocks list
         this.addedStocks.set([]);
         this.selectedTransferFrom = null;
@@ -473,18 +514,18 @@ export class TransferComponent implements OnInit, ViewWillEnter {
         await this.loadPreviousTransfers();
       }
     } catch (error: any) {
-      await loading.dismiss();
+      await this.loader.hide('transfer');
       console.error('Error saving stock transfer:', error);
-      
+
       let errorMessage = 'Error saving stock transfer. Please try again.';
       if (error?.data?.message) {
         errorMessage = error.data.message;
       } else if (error?.message) {
         errorMessage = error.message;
       }
-      
+
       if (error?.status !== 401 && error?.status !== 403) {
-        await this.showToast(errorMessage, 'danger');
+        await this.toast.showFailure(errorMessage);
       }
     }
   }

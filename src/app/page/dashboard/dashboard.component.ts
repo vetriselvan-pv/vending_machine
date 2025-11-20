@@ -1,13 +1,45 @@
 import { DatePipe, CommonModule } from '@angular/common';
-import { Component, OnInit, ViewChild, AfterViewInit, inject, effect } from '@angular/core';
-import { IonContent, IonCard, IonCardContent, IonDatetime, IonButton, IonGrid, IonCol, IonRow, IonText, IonImg, IonItem, IonLabel, IonSelect, IonSelectOption, IonIcon, ToastController, LoadingController } from '@ionic/angular/standalone';
+import {
+  Component,
+  OnInit,
+  ViewChild,
+  AfterViewInit,
+  inject,
+  effect,
+} from '@angular/core';
+import {
+  IonContent,
+  IonCard,
+  IonCardContent,
+  IonDatetime,
+  IonButton,
+  IonGrid,
+  IonCol,
+  IonRow,
+  IonText,
+  IonImg,
+  IonItem,
+  IonLabel,
+  IonSelect,
+  IonSelectOption,
+  IonIcon,
+  ToastController,
+  LoadingController,
+} from '@ionic/angular/standalone';
 import { FormsModule } from '@angular/forms';
-import { Camera, CameraDirection, CameraResultType, CameraSource } from '@capacitor/camera';
+import {
+  Camera,
+  CameraDirection,
+  CameraResultType,
+  CameraSource,
+} from '@capacitor/camera';
 import { AttendanceService } from 'src/app/service/attendance/attendance.service';
 import { UserDetails } from 'src/app/service/user-details/user-details';
 import { Preferences } from '@capacitor/preferences';
 import { addIcons } from 'ionicons';
 import { informationCircleOutline } from 'ionicons/icons';
+import { Toast } from 'src/app/service/toast/toast';
+import { Loader } from 'src/app/service/loader/loader';
 
 interface Customer {
   id: number;
@@ -38,7 +70,25 @@ interface AttendanceRecord {
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
-  imports: [IonContent, IonCard, IonCardContent, IonDatetime, IonButton, IonGrid, IonCol, IonRow, IonText, IonImg, IonItem, IonLabel, IonSelect, IonSelectOption, CommonModule, FormsModule],
+  imports: [
+    IonContent,
+    IonCard,
+    IonCardContent,
+    IonDatetime,
+    IonButton,
+    IonGrid,
+    IonCol,
+    IonRow,
+    IonText,
+    IonImg,
+    IonItem,
+    IonLabel,
+    IonSelect,
+    IonSelectOption,
+    IonIcon,
+    CommonModule,
+    FormsModule,
+  ],
 })
 export class DashboardComponent implements OnInit, AfterViewInit {
   @ViewChild(IonDatetime) calendar!: IonDatetime;
@@ -50,12 +100,15 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   selectedCustomerId: number | null = null;
   loading = false;
   hasAssignedCustomers = false;
+  private toast = inject(Toast);
+  private loader = inject(Loader);
 
   // Customer list - loaded from API (assigned customers only)
   customers: Customer[] = [];
 
   // Cached attendance data for calendar (loaded once, independent of customer)
-  private attendanceDatesCache: {present: string[], absent: string[]} | null = null;
+  private attendanceDatesCache: { present: string[]; absent: string[] } | null =
+    null;
 
   // User details
   userName: string = '';
@@ -64,13 +117,9 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
   private userDetails = inject(UserDetails);
 
-  constructor(
-    private attendanceService: AttendanceService,
-    private toastController: ToastController,
-    private loadingController: LoadingController
-  ) {
+  constructor(private attendanceService: AttendanceService) {
     addIcons({
-      informationCircleOutline
+      informationCircleOutline,
     });
 
     // Reactively watch for privilege changes
@@ -112,7 +161,9 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
       // If not loaded, try to load from storage
       if (!privileges || privileges.length === 0) {
-        const storedPrivileges = await Preferences.get({ key: 'user_privileges' });
+        const storedPrivileges = await Preferences.get({
+          key: 'user_privileges',
+        });
         if (storedPrivileges.value) {
           privileges = JSON.parse(storedPrivileges.value);
           if (Array.isArray(privileges)) {
@@ -122,7 +173,9 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       }
 
       // Check for mark attendance privilege (format: "attendance.markAttendance")
-      this.hasMarkAttendancePrivilege = this.userDetails.hasPrivilege('attendance.markAttendance');
+      this.hasMarkAttendancePrivilege = this.userDetails.hasPrivilege(
+        'attendance.markAttendance'
+      );
     } catch (error) {
       console.error('Error checking privileges:', error);
       this.hasMarkAttendancePrivilege = false;
@@ -176,7 +229,6 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     }
   }
 
-
   async ngOnInit() {
     // Load user name first
     await this.loadUserName();
@@ -226,12 +278,14 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
     // Observe the calendar element for changes
     setTimeout(() => {
-      const calendar = document.querySelector('ion-datetime') || document.querySelector('.attendance-calendar');
+      const calendar =
+        document.querySelector('ion-datetime') ||
+        document.querySelector('.attendance-calendar');
       if (calendar) {
         observer.observe(calendar, {
           childList: true,
           subtree: true,
-          attributes: false
+          attributes: false,
         });
       }
     }, 1000);
@@ -244,7 +298,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         this.customers = response.data.data.map((customer: any) => ({
           id: customer.id,
           name: customer.name || customer.company_name,
-          company_name: customer.company_name
+          company_name: customer.company_name,
         }));
         this.hasAssignedCustomers = this.customers.length > 0;
 
@@ -277,12 +331,16 @@ export class DashboardComponent implements OnInit, AfterViewInit {
           date: attendanceData.date,
           customerId: attendanceData.customer_id,
           customer: attendanceData.customer,
-          customerName: attendanceData.customer?.company_name || attendanceData.customer?.name,
+          customerName:
+            attendanceData.customer?.company_name ||
+            attendanceData.customer?.name,
           in_time: attendanceData.in_time,
           punchInTime: this.formatTime(attendanceData.in_time),
           out_time: attendanceData.out_time,
-          punchOutTime: attendanceData.out_time ? this.formatTime(attendanceData.out_time) : undefined,
-          selfie_image: attendanceData.selfie_image
+          punchOutTime: attendanceData.out_time
+            ? this.formatTime(attendanceData.out_time)
+            : undefined,
+          selfie_image: attendanceData.selfie_image,
         };
 
         this.selectedCustomerId = attendanceData.customer_id;
@@ -292,7 +350,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         this.isPunchedIn = false;
       }
     } catch (error: any) {
-      console.error('Error loading today\'s attendance:', error);
+      console.error("Error loading today's attendance:", error);
       // Auth errors are handled by interceptor
       this.attendance = null;
       this.isPunchedIn = false;
@@ -318,19 +376,16 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   async punchIn() {
     // Check if customer is selected
     if (!this.selectedCustomerId) {
-      this.showToast('Please select a customer first', 'warning');
+      this.toast.showWarning('Please select a customer first');
       return;
     }
 
     if (this.isPunchedIn) {
-      this.showToast('You have already punched in today', 'warning');
+      this.toast.showWarning('You have already punched in today');
       return;
     }
 
-    const loading = await this.loadingController.create({
-      message: 'Processing...'
-    });
-    await loading.present();
+    await this.loader.show('Processing...','punchIn');
 
     try {
       // Open camera
@@ -345,13 +400,15 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       // Submit to API
       const response = await this.attendanceService.punchIn({
         customer_id: this.selectedCustomerId!,
-        selfie_image: image.dataUrl
+        selfie_image: image.dataUrl,
       });
 
-      await loading.dismiss();
+      await this.loader.hide('punchIn');
 
       if (response?.data?.success) {
-        this.showToast('Punched in successfully!', 'success');
+        this.toast.showSuccess(
+          'Login Successful! Access the side menu to continue your work or explore other options.'
+        );
         // Reload today's attendance
         await this.loadTodayAttendance();
 
@@ -361,32 +418,26 @@ export class DashboardComponent implements OnInit, AfterViewInit {
           this.markAttendanceDates();
         }, 500);
       } else {
-        this.showToast(response?.data?.message || 'Failed to punch in', 'danger');
+        this.toast.showFailure(response?.data?.message || 'Failed to punch in');
       }
-
     } catch (error: any) {
-      await loading.dismiss();
-      console.error('Error in punch in:', error);
+      await this.loader.hide('punchIn');
 
       // Auth errors are handled by interceptor
       if (error?.data?.message) {
-        this.showToast(error.data.message, 'danger');
+        this.toast.showFailure(error.data.message);
       } else {
-        this.showToast('Failed to punch in. Please try again.', 'danger');
+        this.toast.showFailure('Failed to punch in. Please try again.');
       }
     }
   }
 
   async punchOut() {
     if (!this.isPunchedIn) {
-      this.showToast('You have not punched in today', 'warning');
+      this.toast.showWarning('You have not punched in today');
       return;
     }
-
-    const loading = await this.loadingController.create({
-      message: 'Processing...'
-    });
-    await loading.present();
+    await this.loader.show('Processing...','punchOut');
 
     try {
       // Open camera
@@ -400,13 +451,13 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
       // Submit to API
       const response = await this.attendanceService.punchOut({
-        selfie_image: image.dataUrl
+        selfie_image: image.dataUrl,
       });
 
-      await loading.dismiss();
+      await this.loader.hide('punchOut');
 
       if (response?.data?.success) {
-        this.showToast('Punched out successfully!', 'success');
+        this.toast.showSuccess('Punched out successfully!');
         // Reload today's attendance
         await this.loadTodayAttendance();
 
@@ -416,38 +467,36 @@ export class DashboardComponent implements OnInit, AfterViewInit {
           this.markAttendanceDates();
         }, 500);
       } else {
-        this.showToast(response?.data?.message || 'Failed to punch out', 'danger');
+        this.toast.showFailure(
+          response?.data?.message || 'Failed to punch out'
+        );
       }
-
     } catch (error: any) {
-      await loading.dismiss();
-      console.error('Error in punch out:', error);
+      await this.loader.hide('punchOut');
 
       // Auth errors are handled by interceptor
       if (error?.data?.message) {
-        this.showToast(error.data.message, 'danger');
+        this.toast.showFailure(error.data.message);
       } else {
-        this.showToast('Failed to punch out. Please try again.', 'danger');
+        this.toast.showFailure('Failed to punch out. Please try again.');
       }
     }
   }
 
-  async showToast(message: string, color: 'success' | 'danger' | 'warning' = 'success') {
-    const toast = await this.toastController.create({
-      message: message,
-      duration: 2000,
-      position: 'top',
-      color: color
-    });
-    await toast.present();
-  }
-
   getCurrentDate(): string {
-    return new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    return new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
   }
 
   getCurrentTime(): string {
-    return this.currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    return this.currentTime.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
   }
 
   getCurrentMonthDate(): string {
@@ -496,7 +545,9 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         const attendances = response.data.data.data;
 
         // First pass: collect all dates and their status
-        const dateStatusMap: { [key: string]: { present: boolean, absent: boolean } } = {};
+        const dateStatusMap: {
+          [key: string]: { present: boolean; absent: boolean };
+        } = {};
 
         attendances.forEach((att: any) => {
           // Handle date format - could be "2025-11-07" or "2025-11-07T18:30:00.000000Z"
@@ -507,7 +558,11 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
           // Parse date string and create date object in local timezone
           const [yearStr, monthStr, dayStr] = dateStr.split('-');
-          const dateObj = new Date(parseInt(yearStr), parseInt(monthStr) - 1, parseInt(dayStr));
+          const dateObj = new Date(
+            parseInt(yearStr),
+            parseInt(monthStr) - 1,
+            parseInt(dayStr)
+          );
           const isFuture = dateObj > todayDateOnly;
 
           // Skip future dates
@@ -528,11 +583,20 @@ export class DashboardComponent implements OnInit, AfterViewInit {
           }
           // Check if marked as absent (status or type is 'absent')
           // Only mark as absent if it's today or past date (not future) AND not already marked as present
-          else if ((att.status === 'absent' || att.type === 'absent') && dateStr <= todayStr && !dateStatusMap[dateStr].present) {
+          else if (
+            (att.status === 'absent' || att.type === 'absent') &&
+            dateStr <= todayStr &&
+            !dateStatusMap[dateStr].present
+          ) {
             dateStatusMap[dateStr].absent = true;
           }
           // If no in_time and no out_time and it's a past date (not today, not future), mark as absent
-          else if (!att.in_time && !att.out_time && dateStr < todayStr && !dateStatusMap[dateStr].present) {
+          else if (
+            !att.in_time &&
+            !att.out_time &&
+            dateStr < todayStr &&
+            !dateStatusMap[dateStr].present
+          ) {
             dateStatusMap[dateStr].absent = true;
           }
         });
@@ -561,7 +625,10 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         });
 
         // Cache the attendance dates
-        this.attendanceDatesCache = { present: presentDates, absent: absentDates };
+        this.attendanceDatesCache = {
+          present: presentDates,
+          absent: absentDates,
+        };
       }
     } catch (error: any) {
       console.error('Error loading attendance dates for calendar:', error);
@@ -571,7 +638,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   }
 
   // Get cached attendance dates (no API call)
-  getAttendanceDates(): {present: string[], absent: string[]} {
+  getAttendanceDates(): { present: string[]; absent: string[] } {
     return this.attendanceDatesCache || { present: [], absent: [] };
   }
 
@@ -584,31 +651,41 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     const month = today.getMonth();
     const day = today.getDate();
     const todayDate = new Date(year, month, day);
-    const todayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-
+    const todayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(
+      day
+    ).padStart(2, '0')}`;
 
     // Function to highlight dates dynamically
     const highlightDates = () => {
-      const calendar = document.querySelector('ion-datetime') || document.querySelector('.attendance-calendar');
+      const calendar =
+        document.querySelector('ion-datetime') ||
+        document.querySelector('.attendance-calendar');
       if (!calendar) {
         return false;
       }
 
       // Find calendar day elements - Ionic uses shadow DOM
-      let days: NodeListOf<Element> = calendar.querySelectorAll('.calendar-day');
+      let days: NodeListOf<Element> =
+        calendar.querySelectorAll('.calendar-day');
 
       // Method 1: Try accessing shadow root first (most reliable for Ionic)
       if (days.length === 0 && (calendar as any).shadowRoot) {
         days = (calendar as any).shadowRoot.querySelectorAll('.calendar-day');
         if (days.length === 0) {
-          days = (calendar as any).shadowRoot.querySelectorAll('[part="calendar-day"]');
+          days = (calendar as any).shadowRoot.querySelectorAll(
+            '[part="calendar-day"]'
+          );
         }
         if (days.length === 0) {
-          days = (calendar as any).shadowRoot.querySelectorAll('button[part="calendar-day"]');
+          days = (calendar as any).shadowRoot.querySelectorAll(
+            'button[part="calendar-day"]'
+          );
         }
         if (days.length === 0) {
           // Try finding all buttons with data-day attribute
-          days = (calendar as any).shadowRoot.querySelectorAll('button[data-day]');
+          days = (calendar as any).shadowRoot.querySelectorAll(
+            'button[data-day]'
+          );
         }
       }
 
@@ -626,7 +703,6 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       if (days.length === 0) {
         return false;
       }
-
 
       let markedCount = 0;
       days.forEach((day: any) => {
@@ -668,24 +744,45 @@ export class DashboardComponent implements OnInit, AfterViewInit {
               if (dateMatch) {
                 const dayNum = parseInt(dateMatch[1]);
                 if (!isNaN(dayNum) && dayNum >= 1 && dayNum <= 31) {
-                  parsedDate = new Date(today.getFullYear(), today.getMonth(), dayNum);
+                  parsedDate = new Date(
+                    today.getFullYear(),
+                    today.getMonth(),
+                    dayNum
+                  );
                 }
               }
-            } else if (dayText && !isNaN(parseInt(dayText)) && dayText.length <= 2) {
+            } else if (
+              dayText &&
+              !isNaN(parseInt(dayText)) &&
+              dayText.length <= 2
+            ) {
               const dayNum = parseInt(dayText);
               if (dayNum >= 1 && dayNum <= 31) {
-                parsedDate = new Date(today.getFullYear(), today.getMonth(), dayNum);
+                parsedDate = new Date(
+                  today.getFullYear(),
+                  today.getMonth(),
+                  dayNum
+                );
               }
             }
 
             if (parsedDate && !isNaN(parsedDate.getTime())) {
               // Check if it's in current month
-              if (parsedDate.getMonth() === today.getMonth() &&
-                  parsedDate.getFullYear() === today.getFullYear()) {
-                const dateOnly = new Date(parsedDate.getFullYear(), parsedDate.getMonth(), parsedDate.getDate());
+              if (
+                parsedDate.getMonth() === today.getMonth() &&
+                parsedDate.getFullYear() === today.getFullYear()
+              ) {
+                const dateOnly = new Date(
+                  parsedDate.getFullYear(),
+                  parsedDate.getMonth(),
+                  parsedDate.getDate()
+                );
                 // Format as YYYY-MM-DD directly to avoid timezone issues
                 const year = parsedDate.getFullYear();
-                const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
+                const month = String(parsedDate.getMonth() + 1).padStart(
+                  2,
+                  '0'
+                );
                 const dayValue = String(parsedDate.getDate()).padStart(2, '0');
                 const dateStrFallback = `${year}-${month}-${dayValue}`;
                 const isToday = dateStrFallback === todayStr;
@@ -708,14 +805,26 @@ export class DashboardComponent implements OnInit, AfterViewInit {
                 // Mark present dates (green) - only if actually present (has in_time)
                 if (present.includes(dateStrFallback)) {
                   day.classList.add('present-date');
-                  day.style.setProperty('background-color', '#4CAF50', 'important');
+                  day.style.setProperty(
+                    'background-color',
+                    '#4CAF50',
+                    'important'
+                  );
                   day.style.setProperty('color', '#ffffff', 'important');
                   day.style.setProperty('border-radius', '50%', 'important');
                   day.style.setProperty('font-weight', '600', 'important');
                   // If today, add yellow border
                   if (isToday) {
-                    day.style.setProperty('border', '3px solid #FFD700', 'important');
-                    day.style.setProperty('box-sizing', 'border-box', 'important');
+                    day.style.setProperty(
+                      'border',
+                      '3px solid #FFD700',
+                      'important'
+                    );
+                    day.style.setProperty(
+                      'box-sizing',
+                      'border-box',
+                      'important'
+                    );
                   } else {
                     day.style.setProperty('border', '', 'important');
                   }
@@ -724,14 +833,26 @@ export class DashboardComponent implements OnInit, AfterViewInit {
                 // Mark absent dates (red) - only past dates and today if absent (not future)
                 else if (absent.includes(dateStrFallback) && !isFuture) {
                   day.classList.add('absent-date');
-                  day.style.setProperty('background-color', '#f44336', 'important');
+                  day.style.setProperty(
+                    'background-color',
+                    '#f44336',
+                    'important'
+                  );
                   day.style.setProperty('color', '#ffffff', 'important');
                   day.style.setProperty('border-radius', '50%', 'important');
                   day.style.setProperty('font-weight', '600', 'important');
                   // If today, add yellow border
                   if (isToday) {
-                    day.style.setProperty('border', '3px solid #FFD700', 'important');
-                    day.style.setProperty('box-sizing', 'border-box', 'important');
+                    day.style.setProperty(
+                      'border',
+                      '3px solid #FFD700',
+                      'important'
+                    );
+                    day.style.setProperty(
+                      'box-sizing',
+                      'border-box',
+                      'important'
+                    );
                   } else {
                     day.style.setProperty('border', '', 'important');
                   }
@@ -758,12 +879,18 @@ export class DashboardComponent implements OnInit, AfterViewInit {
           }
 
           // Check if it's in current month
-          if (dateOnly.getMonth() !== today.getMonth() ||
-              dateOnly.getFullYear() !== today.getFullYear()) {
+          if (
+            dateOnly.getMonth() !== today.getMonth() ||
+            dateOnly.getFullYear() !== today.getFullYear()
+          ) {
             return;
           }
 
-          const dateOnlyNormalized = new Date(dateOnly.getFullYear(), dateOnly.getMonth(), dateOnly.getDate());
+          const dateOnlyNormalized = new Date(
+            dateOnly.getFullYear(),
+            dateOnly.getMonth(),
+            dateOnly.getDate()
+          );
           const isToday = dateStr === todayStr;
           const isFuture = dateOnlyNormalized > todayDate;
 
@@ -849,5 +976,4 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       }, 500);
     }
   }
-
 }

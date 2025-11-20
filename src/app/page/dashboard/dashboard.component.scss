@@ -18,6 +18,43 @@
   }
 }
 
+.camera-notch-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(var(--ion-safe-area-top, 0) + env(safe-area-inset-top, 0));
+  min-height: var(--ion-safe-area-top, 0);
+  background: linear-gradient(180deg, rgba(245, 245, 245, .95)0%, rgba(245, 245, 245, .85)50%, rgba(245, 245, 245, .75)100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 1000;
+  pointer-events: none
+}
+
+@supports(padding:max(0px)) {
+  .camera-notch-overlay {
+    height: max(var(--ion-safe-area-top, 0px), env(safe-area-inset-top, 0px))
+  }
+}
+
+@media(min-width:768px) {
+  .camera-notch-overlay {
+    display: none
+  }
+}
+
+.camera-notch-overlay::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, .5);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px)
+}
 
 .header-card {
   margin: 0 0 1rem;
@@ -610,6 +647,35 @@
   border-radius: 50% !important
 }
 
+// Calendar day classes for present/absent
+.attendance-calendar .calendar-day.present-date {
+  background-color: #4CAF50 !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+  border-radius: 50% !important;
+}
+
+.attendance-calendar .calendar-day.absent-date {
+  background-color: #f44336 !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+  border-radius: 50% !important;
+}
+
+// Today with present - green background + yellow border
+.attendance-calendar .calendar-day.calendar-day-today.present-date {
+  background-color: #4CAF50 !important;
+  border: 3px solid #FFD700 !important;
+  box-sizing: border-box !important;
+}
+
+// Today with absent - red background + yellow border
+.attendance-calendar .calendar-day.calendar-day-today.absent-date {
+  background-color: #f44336 !important;
+  border: 3px solid #FFD700 !important;
+  box-sizing: border-box !important;
+}
+
 ::ng-deep .attendance-calendar {
   --calendar-day-selected-background: transparent;
   --calendar-day-selected-color: inherit
@@ -632,6 +698,35 @@
   color: #fff !important;
   font-weight: 600 !important;
   border-radius: 50% !important
+}
+
+// Calendar day classes for present/absent (deep)
+::ng-deep .attendance-calendar .calendar-day.present-date {
+  background-color: #4CAF50 !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+  border-radius: 50% !important;
+}
+
+::ng-deep .attendance-calendar .calendar-day.absent-date {
+  background-color: #f44336 !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+  border-radius: 50% !important;
+}
+
+// Today with present - green background + yellow border (deep)
+::ng-deep .attendance-calendar .calendar-day.calendar-day-today.present-date {
+  background-color: #4CAF50 !important;
+  border: 3px solid #FFD700 !important;
+  box-sizing: border-box !important;
+}
+
+// Today with absent - red background + yellow border (deep)
+::ng-deep .attendance-calendar .calendar-day.calendar-day-today.absent-date {
+  background-color: #f44336 !important;
+  border: 3px solid #FFD700 !important;
+  box-sizing: border-box !important;
 }
 
 ::ng-deep .attendance-calendar button[part="month-year-button"] {
@@ -712,10 +807,4 @@ ion-col {
   ion-col {
     padding: .25rem
   }
-}
-
-.date-wrapper{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
 }

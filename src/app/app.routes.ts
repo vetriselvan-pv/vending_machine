@@ -1,5 +1,8 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './guard/auth.guard';
+import { authGuard, emptyRedirect } from './guard/auth.guard';
+import { inject } from '@angular/core';
+import { LocalStorage } from './service/local-storage/local-storage';
+
 
 export const routes: Routes = [
   {
@@ -88,7 +91,8 @@ export const routes: Routes = [
   },
   {
     path: '',
-    redirectTo: 'onboarding',
     pathMatch: 'full',
+    canActivate : [emptyRedirect],
+    children : []
   },
 ];

@@ -57,8 +57,7 @@
       <!-- Profile / Brand header -->
       <div class="vm-header ion-padding">
         <ion-avatar class="vm-avatar">
-          <img alt="avatar"
-            [src]="userDetails.userDetails()?.profile_photo || 'https://ionicframework.com/docs/img/demos/avatar.svg'" />
+          <img alt="avatar" [src]="userDetails.userDetails()?.profile_photo || 'https://ionicframework.com/docs/img/demos/avatar.svg'"   />
         </ion-avatar>
         <div class="vm-title">
           <ion-text color="primary">
@@ -80,7 +79,7 @@
       <!-- Menu items -->
 
       <ion-list lines="none" class="vm-list">
-        @for (tab of tabList; track $index) { @if (tab.route) {
+        @for (tab of tabList(); track $index) { @if (tab.route) {
         <ion-menu-toggle auto-hide="true">
           <ion-item [class.active-route]="activeRoute === tab.route" (click)="onMenuClick(tab)" detail="false">
             <ion-icon [color]="activeRoute === tab.route ? '' : 'primary' " [name]="tab.icon" slot="start"></ion-icon>
@@ -103,10 +102,10 @@
 </ion-menu>
 
 <div class="ion-page" id="main-content">
-  <ion-header translucent="true">
+  <ion-header class="box"  translucent="true">
     <ion-toolbar class="vm-toolbar">
       <ion-buttons slot="start">
-        <ion-menu-button color="primary"></ion-menu-button>
+        <ion-menu-button  color="primary" ></ion-menu-button>
       </ion-buttons>
       <ion-title color="primary" class="toolbar-title">{{ selectedMenu }}</ion-title>
     </ion-toolbar>

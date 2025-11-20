@@ -1,4 +1,4 @@
-<ion-content class="dashboard" fullscreen="true">
+<ion-content class="dashboard ion-padding" fullscreen="true">
   <!-- Header Card -->
   <ion-card class="header-card">
     <ion-card-content>
@@ -7,8 +7,8 @@
         <ion-row class="welcome-row">
           <ion-col size="8" class="ion-align-self-center">
             <div class="welcome-content">
-              <h1 class="welcome-title">Welcome vetri!</h1>
-              <h5 class="welcome-subtitle">Good morning!</h5>
+              <h1 class="welcome-title">Welcome {{ userName || 'User' }}!</h1>
+              <h5 class="welcome-subtitle">{{ greeting || 'Good morning!' }}</h5>
             </div>
           </ion-col>
           <ion-col size="4" class="logo-col">
@@ -19,24 +19,21 @@
         </ion-row>
 
         <!-- Customer Selection Section -->
+        @if (hasAssignedCustomers && hasMarkAttendancePrivilege) {
         <ion-row class="customer-row">
           <ion-col size="12">
             <div class="customer-select-wrapper">
               <ion-item class="customer-select-item" [disabled]="isPunchedIn">
                 <ion-label position="stacked" class="customer-label">Select Customer</ion-label>
-                <ion-select
-                  [(ngModel)]="selectedCustomerId"
-                  placeholder="Select Customer"
-                  interface="action-sheet"
-                  class="customer-select"
-                  [disabled]="isPunchedIn"
-                  (ionChange)="onCustomerChange($event)">
+                <ion-select [(ngModel)]="selectedCustomerId" placeholder="Select Customer" interface="action-sheet"
+                  class="customer-select" [disabled]="isPunchedIn" (ionChange)="onCustomerChange($event)">
                   <ion-select-option *ngFor="let customer of customers" [value]="customer.id">
                     {{ customer.name }}
                   </ion-select-option>
                 </ion-select>
               </ion-item>
-              <div class="selected-customer-info" *ngIf="attendance && attendance.customerName && attendance.punchOutTime">
+              <div class="selected-customer-info"
+                *ngIf="attendance && attendance.customerName && attendance.punchOutTime">
                 <ion-text color="primary">
                   <span class="customer-name-text">Completed: {{ attendance.customerName }}</span>
                 </ion-text>
@@ -44,24 +41,35 @@
             </div>
           </ion-col>
         </ion-row>
+        }
+
+        <!-- No Customer Assigned Message -->
+        @if (!hasAssignedCustomers) {
+        <ion-row class="customer-row" *ngIf="">
+          <ion-col size="12">
+            <div class="no-customer-message">
+              <ion-text color="warning">
+                <p class="message-text">
+                  <ion-icon name="information-circle-outline"
+                    style="vertical-align: middle; margin-right: 8px;"></ion-icon>
+                  Please contact admin to assign customer name to your account.
+                </p>
+              </ion-text>
+            </div>
+          </ion-col>
+        </ion-row>
+        }
 
         <!-- Punch Section -->
+        @if (hasAssignedCustomers && hasMarkAttendancePrivilege) {
         <ion-row class="punch-row">
           <ion-col size="12" class="btn-content-col">
             <div class="btn-content">
-              <ion-button
-                id="punch-in"
-                color="primary"
-                (click)="punchIn()"
-                class="punch-btn punch-in-btn"
+              <ion-button id="punch-in" color="primary" (click)="punchIn()" class="punch-btn punch-in-btn"
                 [disabled]="isPunchedIn || !selectedCustomerId || (attendance && attendance.punchOutTime)">
                 Punch in
               </ion-button>
-              <ion-button
-                id="punch-out"
-                color="primary"
-                (click)="punchOut()"
-                class="punch-btn punch-out-btn"
+              <ion-button id="punch-out" color="primary" (click)="punchOut()" class="punch-btn punch-out-btn"
                 [disabled]="!isPunchedIn || (attendance && attendance.punchOutTime)">
                 Punch out
               </ion-button>
@@ -112,25 +120,20 @@
             </ion-card>
           </ion-col>
         </ion-row>
+        }
       </ion-grid>
     </ion-card-content>
   </ion-card>
 
   <!-- Attendance Calendar Card -->
+  @if (hasMarkAttendancePrivilege) {
   <ion-card class="date-card">
     <ion-card-content class="date-wrapper">
       <ion-text class="calendar-header">
         <h3 class="calendar-title">Attendance Calendar</h3>
       </ion-text>
-      <ion-datetime
-        color="primary"
-        presentation="date"
-        [readonly]="true"
-        [max]="getMaxDate()"
-        [min]="getMinDate()"
-        [value]="getCurrentMonthDate()"
-        [disabled]="true"
-        class="attendance-calendar">
+      <ion-datetime color="primary" presentation="date" [readonly]="true" [max]="getMaxDate()" [min]="getMinDate()"
+        [value]="getCurrentMonthDate()" [disabled]="true" class="attendance-calendar">
       </ion-datetime>
       <div class="calendar-legend">
         <div class="legend-item">
@@ -144,4 +147,5 @@
       </div>
     </ion-card-content>
   </ion-card>
+  }
 </ion-content>

@@ -1,12 +1,48 @@
-<ion-content [fullscreen]="true" class="stock-content">
+<ion-content [fullscreen]="true" class="stock-content ion-padding">
 
   <!-- Form Section -->
   <ion-card class="form-card">
     <ion-card-content>
       <form [formGroup]="stockManagementForm">
         <ion-grid class="form-grid">
+          <!-- Customer Selection Section -->
+          <ion-row *ngIf="hasAssignedCustomers">
+            <ion-col size="12">
+              <div class="customer-select-wrapper">
+                <ion-item class="customer-select-item" lines="none">
+                  <ion-label position="stacked" class="customer-label">Select Customer</ion-label>
+                  <ion-select
+                    [(ngModel)]="selectedCustomerId"
+                    placeholder="Select Customer"
+                    interface="action-sheet"
+                    class="customer-select"
+                    [ngModelOptions]="{standalone: true}"
+                    (ionChange)="onCustomerChange($event)">
+                    <ion-select-option *ngFor="let customer of customers" [value]="customer.id">
+                      {{ customer.name }}
+                    </ion-select-option>
+                  </ion-select>
+                </ion-item>
+              </div>
+            </ion-col>
+          </ion-row>
+
+          <!-- No Customer Assigned Message -->
+          <ion-row *ngIf="!hasAssignedCustomers">
+            <ion-col size="12">
+              <div class="no-customer-message">
+                <ion-text color="warning">
+                  <p class="message-text">
+                    <ion-icon name="information-circle-outline" style="vertical-align: middle; margin-right: 8px;"></ion-icon>
+                    Please contact admin to assign customer name to your account.
+                  </p>
+                </ion-text>
+              </div>
+            </ion-col>
+          </ion-row>
+
           <!-- Product Selection -->
-          <ion-row>
+          <ion-row *ngIf="hasAssignedCustomers">
             <ion-col size="12">
               <app-searchable-dropdown
                 [itemIdField]="'id'"
@@ -24,7 +60,7 @@
           <ion-row>
             <ion-col size="12">
               <div class="input-wrapper">
-                <ion-label class="input-label">Current Available Stock (Closing Stock)</ion-label>
+                <ion-label class="input-label">closing Stock</ion-label>
                 <ion-item lines="none" class="input-item">
                   <ion-input
                     type="number"
@@ -37,6 +73,7 @@
               </div>
             </ion-col>
           </ion-row>
+
 
           <!-- Add Stock Button -->
           <ion-row>
@@ -106,21 +143,105 @@
     </ion-card-content>
   </ion-card>
 
-  <!-- Machine Reading Section -->
-  <ion-card class="machine-reading-card">
+  <!-- Machine Selection and Reading Section -->
+  <ion-card class="machine-reading-card" *ngIf="hasAssignedCustomers">
     <ion-card-content>
-      <div class="input-wrapper">
-        <ion-label class="input-label">Machine Reading</ion-label>
-        <ion-item lines="none" class="input-item">
-          <ion-input
-            type="text"
-            placeholder="Enter machine reading"
-            [(ngModel)]="machineReading"
-            [ngModelOptions]="{standalone: true}"
-            class="stock-input">
-          </ion-input>
-        </ion-item>
-      </div>
+      <ion-grid>
+        <!-- Machine Selection -->
+        <ion-row>
+          <ion-col size="12">
+            <div class="customer-select-wrapper">
+              <ion-item class="customer-select-item" lines="none">
+                <ion-label position="stacked" class="customer-label">Select Machine</ion-label>
+                <ion-select
+                  [(ngModel)]="selectedMachineId"
+                  placeholder="Select Machine"
+                  interface="action-sheet"
+                  class="customer-select"
+                  [ngModelOptions]="{standalone: true}"
+                  (ionChange)="onMachineSelect($event)">
+                  <ion-select-option *ngFor="let machine of machines" [value]="machine.id">
+                    {{ machine.name }}
+                  </ion-select-option>
+                </ion-select>
+              </ion-item>
+            </div>
+          </ion-col>
+        </ion-row>
+
+        <!-- Machine Reading Input -->
+        <ion-row>
+          <ion-col size="12">
+            <div class="input-wrapper">
+              <ion-label class="input-label">Machine Reading</ion-label>
+              <ion-item lines="none" class="input-item">
+                <ion-input
+                  type="text"
+                  placeholder="Enter machine reading"
+                  [(ngModel)]="machineReading"
+                  [ngModelOptions]="{standalone: true}"
+                  class="stock-input">
+                </ion-input>
+              </ion-item>
+            </div>
+          </ion-col>
+        </ion-row>
+
+        <!-- Add Machine Reading Button -->
+        <ion-row>
+          <ion-col size="12">
+            <ion-button
+              expand="block"
+              size="small"
+              class="add-button"
+              (click)="addMachineReading()"
+              [disabled]="!selectedMachineId || !machineReading || machineReading.trim() === ''">
+              <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+              Add Machine Reading
+            </ion-button>
+          </ion-col>
+        </ion-row>
+
+        <!-- Added Machine Readings List -->
+        @if (machineReadings.size > 0) {
+          <ion-row>
+            <ion-col size="12">
+              <div class="machine-readings-list">
+                <ion-text class="list-title">Machine Readings ({{ machineReadings.size }})</ion-text>
+                @for (entry of getMachineReadingsArray(); track entry[0]) {
+                  <ion-card class="machine-reading-item-card">
+                    <ion-card-content>
+                      <ion-grid class="stock-item-grid">
+                        <ion-row class="stock-item-row">
+                          <ion-col size="8">
+                            <ion-text class="item-label">Machine</ion-text>
+                            <ion-text class="item-value">{{ getMachineName(entry[0]) }}</ion-text>
+                          </ion-col>
+                          <ion-col size="4" class="ion-text-end">
+                            <ion-button
+                              fill="clear"
+                              size="small"
+                              color="danger"
+                              (click)="removeMachineReading(entry[0])">
+                              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+                            </ion-button>
+                          </ion-col>
+                        </ion-row>
+                        <ion-row class="stock-item-row">
+                          <ion-col size="12">
+                            <ion-text class="item-label">Reading</ion-text>
+                            <ion-text class="item-value stock-value">{{ entry[1] }}</ion-text>
+                          </ion-col>
+                        </ion-row>
+                      </ion-grid>
+                    </ion-card-content>
+                  </ion-card>
+                }
+              </div>
+            </ion-col>
+          </ion-row>
+        }
+      </ion-grid>
     </ion-card-content>
   </ion-card>
 
@@ -134,4 +255,5 @@
     [disabled]="addedStocks().length === 0">
     <ion-text><strong>Save Closing Stocks</strong></ion-text>
   </ion-button>
+
 </ion-content>

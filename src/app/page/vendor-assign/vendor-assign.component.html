@@ -1,4 +1,4 @@
-<ion-content [fullscreen]="true" class="customer-assign-content">
+<ion-content [fullscreen]="true" class="customer-assign-content ion-padding">
 
   <!-- Assignment Form Section -->
   <ion-card class="form-card">
@@ -35,6 +35,31 @@
             </ion-col>
           </ion-row>
 
+          <!-- Machine Selection (shown when customer is selected) -->
+          @if(selectedCustomer && machinesList.length > 0) {
+            <ion-row>
+              <ion-col size="12">
+                <app-searchable-dropdown
+                  [itemIdField]="'id'"
+                  [placeholder]="'Select Machine'"
+                  [label]="'Select Machine'"
+                  [items]="machinesList"
+                  itemValueField="id"
+                  itemTextField="text"
+                  (selectionChange)="onMachineSelect($event)">
+                </app-searchable-dropdown>
+              </ion-col>
+            </ion-row>
+          } @else if(selectedCustomer && machinesList.length === 0) {
+            <ion-row>
+              <ion-col size="12">
+                <ion-text color="warning" style="font-size: 14px; padding: 8px;">
+                  No machines assigned to this customer. Please assign machines first.
+                </ion-text>
+              </ion-col>
+            </ion-row>
+          }
+
           <!-- Assign Button -->
           <ion-row>
             <ion-col size="12">
@@ -42,7 +67,7 @@
                 expand="block"
                 class="assign-button"
                 (click)="assignEmployee()"
-                [disabled]="!selectedEmployee || !selectedCustomer">
+                [disabled]="!selectedEmployee || !selectedCustomer || !selectedMachine">
                 <ion-icon slot="start" name="person-add-outline"></ion-icon>
                 Assign Employee to Customer
               </ion-button>
