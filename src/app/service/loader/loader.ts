@@ -7,10 +7,14 @@ import { LoadingController } from '@ionic/angular/standalone';
 export class Loader {
   protected loadingCtrl = inject(LoadingController);
 
-  private _loader: Map<string, HTMLIonLoadingElement>  = new Map();
+  private _loader:   HTMLIonLoadingElement | undefined   = undefined;
 
   async show(message: string, id: string) {
-    const loader = await this.loadingCtrl.create({
+    if(this._loader){
+      await this._loader.dismiss();
+      this._loader = undefined
+    }
+    this._loader =  await this.loadingCtrl.create({
         message: message,
         spinner: null,
         cssClass: 'html-loader',
@@ -18,18 +22,17 @@ export class Loader {
         keyboardClose: true,
         mode: 'ios',
         translucent: true,
+        showBackdrop : true
       })
-    this._loader?.set(
-      id,
-      loader
-    );
 
-    await loader.present();
+
+    await this._loader?.present();
   }
 
   async hide(id: string) {
-    if (this._loader?.get(id)) {
-      this._loader?.get(id)?.dismiss();
+    if(this._loader){
+      await this._loader.dismiss()
+        this._loader = undefined
     }
   }
 }

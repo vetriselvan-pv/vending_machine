@@ -20,6 +20,7 @@ import { addIcons } from 'ionicons';
 import { logOutOutline } from 'ionicons/icons';
 import { ProfileService } from 'src/app/service/profile/profile.service';
 import { Preferences } from '@capacitor/preferences';
+import { Loader } from 'src/app/service/loader/loader';
 
 @Component({
   selector: 'app-profile',
@@ -44,7 +45,7 @@ export class ProfileComponent implements OnInit, ViewWillEnter {
   private router = inject(Router);
   private profileService = inject(ProfileService);
   private toastController = inject(ToastController);
-  private loadingController = inject(LoadingController);
+  private loader = inject(Loader);
 
   profileData = signal<any>(null);
   isLoading = signal<boolean>(false);
@@ -52,7 +53,7 @@ export class ProfileComponent implements OnInit, ViewWillEnter {
   userDetail = computed(() => {
     const profile = this.profileData();
     if (!profile) return [];
-    
+
     const employee = profile.employee || {};
     const fields = [
       { key: 'name', label: 'Name', value: employee.name || 'N/A' },
@@ -62,7 +63,7 @@ export class ProfileComponent implements OnInit, ViewWillEnter {
       { key: 'username', label: 'Username', value: profile.username || 'N/A' },
       { key: 'role', label: 'Role', value: employee.role?.name || 'N/A' }
     ];
-    
+
     return fields;
   });
 
@@ -82,14 +83,16 @@ export class ProfileComponent implements OnInit, ViewWillEnter {
   }
 
   async ngOnInit() {
-    await this.initializeData();
+    // await this.initializeData();
   }
 
   async ionViewWillEnter() {
     // Only reload if data hasn't been loaded yet
+    this.loader.show('Loading Profile Details ..', 'profile')
     if (!this.isDataLoaded && !this.isInitializing) {
       await this.initializeData();
     }
+    this.loader.hide('profile')
   }
 
   async initializeData() {
@@ -116,7 +119,7 @@ export class ProfileComponent implements OnInit, ViewWillEnter {
     try {
       const response = await this.profileService.getProfile();
       const responseData = response?.data;
-      
+
       if (responseData?.success && responseData?.data) {
         this.profileData.set(responseData.data);
       } else {

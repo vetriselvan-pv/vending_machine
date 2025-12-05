@@ -85,11 +85,13 @@ export class OnboardingComponent implements OnInit {
   }
 
   skip() {
+    this.localStorage.set('userFirstTime', 'true');
     this.router.navigate(['/login']);
   }
 
   getStarted() {
     if (this.currentSlideIndex === this.slidesLength - 1) {
+      this.localStorage.set('userFirstTime', 'true');
       this.router.navigate(['/login']);
     } else {
       this.nextSlide();

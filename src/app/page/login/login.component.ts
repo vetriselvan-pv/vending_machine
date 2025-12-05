@@ -26,6 +26,7 @@ import { environment } from 'src/environments/environment';
 import { Preferences } from '@capacitor/preferences';
 import { UserDetails } from 'src/app/service/user-details/user-details';
 import { Loader } from 'src/app/service/loader/loader';
+import { Toast } from 'src/app/service/toast/toast';
 
 @Component({
   selector: 'app-login',
@@ -50,6 +51,7 @@ export class LoginComponent implements OnInit {
   private toastController = inject(ToastController);
   protected userDetails = inject(UserDetails);
   private loader = inject(Loader);
+  private toast = inject(Toast);
 
   showPassword = false;
 
@@ -76,7 +78,7 @@ export class LoginComponent implements OnInit {
 
   async login() {
     if (this.loginForm.valid) {
-      this.loader.show('Logging In...','login');
+      this.loader.show('Logging In...', 'login');
       const url = environment.baseURL + environment.loginURL;
       this.httpProvider.httpPostRequest(url, this.loginForm.value).subscribe({
         next: async (res) => {
@@ -126,24 +128,20 @@ export class LoginComponent implements OnInit {
             // Set user details
             this.userDetails.userDetails.set(responseData.data.user.employee);
             this.loader.hide('login');
+            this.toast.showSuccess('Logged in successfully', 'top');
             // Navigate after privileges are set
             this.router.navigate(['/layout/dashboard']);
           } else {
             // Show the actual error message from API response
             const errorMessage =
               responseData?.message || 'Login failed! Please try again';
-            const toast = await this.toastController.create({
-              message: errorMessage,
-              duration: 2000,
-              position: 'top',
-              color: 'danger',
-            });
-            await toast.present();
+            this.toast.showFailure(errorMessage, 'top');
           }
         },
         error: async (err: any) => {
           // Try to extract error message from error response
           let errorMessage = 'Login failed! Please try again';
+          this.loader.hide('login');
 
           // Check if error has a data property with message
           if (err?.data?.message) {
@@ -156,13 +154,7 @@ export class LoginComponent implements OnInit {
             errorMessage = err;
           }
 
-          const toast = await this.toastController.create({
-            message: errorMessage,
-            duration: 2000,
-            position: 'top',
-            color: 'danger',
-          });
-          await toast.present();
+          this.toast.showFailure(errorMessage, 'top');
         },
       });
     } else {

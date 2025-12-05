@@ -89,10 +89,10 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./page/login/login.component').then((m) => m.LoginComponent),
   },
-  {
-    path: '',
-    pathMatch: 'full',
-    canActivate : [emptyRedirect],
-    children : []
-  },
+  // {
+  //   path: '',
+  //   pathMatch: 'full',
+  //   canActivate : [emptyRedirect],
+  //   children : []
+  // },
 ];

@@ -673,3 +673,7 @@ ion-app, ion-content, .ion-page {
   height: 80px;
   margin: auto;
 }
+
+.backdrop-no-tappable{
+  touch-action: none;
+}

@@ -15,6 +15,8 @@ import {
   ToastController,
 } from '@ionic/angular/standalone';
 import { Subject, Subscription } from 'rxjs';
+import { LocalStorage } from './service/local-storage/local-storage';
+import { Preferences } from '@capacitor/preferences';
 
 @Component({
   selector: 'app-root',
@@ -29,6 +31,7 @@ export class AppComponent implements OnDestroy {
 
   private showingExitAlert = false;
 
+  protected localStorage = inject(LocalStorage);
   protected platform = inject(Platform);
   private alertCtrl = inject(AlertController);
   private modalCtrl = inject(ModalController);
@@ -81,8 +84,9 @@ export class AppComponent implements OnDestroy {
   }
 
   async setStatusBarColor() {
-    await StatusBar?.setBackgroundColor({ color: '#3880ff' }); // Ionic primary blue
+    await StatusBar?.setBackgroundColor({ color: '#fff' }); // Ionic primary blue
     await StatusBar?.setStyle({ style: Style.Light }); // or Style.Dark
+    await StatusBar?.setOverlaysWebView({ overlay: false });
   }
 
   async showSplashScreen() {
@@ -90,6 +94,20 @@ export class AppComponent implements OnDestroy {
       showDuration: 1000,
       autoHide: true,
     });
+
+
+
+    const userFirstTime = await this.localStorage.get('userFirstTime');
+    const token = await Preferences.get({ key: 'auth_token' });
+    if (!userFirstTime) {
+      this.router.navigate(['/onboarding']);
+    } else if (!token && userFirstTime) {
+      // No token, redirect to login
+      this.router.navigate(['/login']);
+    } else if (token && userFirstTime) {
+      // No token, redirect to login
+      this.router.navigate(['/layout/dashboard']);
+    }
   }
 
   hanldeBackNavigation() {

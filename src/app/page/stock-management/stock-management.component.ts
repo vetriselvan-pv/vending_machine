@@ -101,12 +101,14 @@ export class StockManagementComponent implements OnInit, ViewWillEnter {
 
   async ngOnInit() {
     // Initial load - will be called once
-    await this.initializeData();
+    // await this.initializeData();
   }
 
   async ionViewWillEnter() {
     // Called every time the view is about to enter (including navigation from other pages)
+        this.loader.show('Loading products with stock data...','stocks')
     await this.initializeData();
+            await this.loader.hide('stocks')
   }
 
   async initializeData() {
@@ -230,7 +232,7 @@ export class StockManagementComponent implements OnInit, ViewWillEnter {
   async loadProducts() {
 
 
-    await this.loader.show('Loading products...','product')
+    // await this.loader.show('Loading products...','product')
 
     try {
       const response = await this.productService.getProducts({
@@ -263,7 +265,7 @@ export class StockManagementComponent implements OnInit, ViewWillEnter {
         await this.toast.showFailure('Error loading products. Please try again.');
       }
     } finally {
-      await this.loader.hide('product');
+      // await this.loader.hide('product');
     }
   }
 
@@ -276,7 +278,6 @@ export class StockManagementComponent implements OnInit, ViewWillEnter {
       return;
     }
 
-    this.loader.show('Loading products with stock data...','stock')
 
     try {
       // Get today's date in YYYY-MM-DD format
@@ -313,22 +314,30 @@ export class StockManagementComponent implements OnInit, ViewWillEnter {
             text: `${product.product_name} (${product.product_code}) - Available: ${product.calculated_available_qty} ${product.product_unit}`
           };
         });
+        console.log('stocks completed 1')
+        // await this.loader.hide('stocks')
       } else {
         console.error('Failed to load products with stock data - Invalid response structure:', responseData);
         await this.toast.showFailure('Failed to load products with stock data');
+                console.log('stocks completed 2')
+              // await this.loader.hide('stocks')
         // Fallback to regular product loading
         await this.loadProducts();
       }
     } catch (error: any) {
       console.error('Error loading products with stock data:', error);
+                console.log('stocks completed 3')
+
+      //  await this.loader.hide('stocks')
       // Auth errors are handled by interceptor
       if (error?.status !== 401 && error?.status !== 403) {
         await this.toast.showFailure('Error loading products with stock data. Please try again.');
+
         // Fallback to regular product loading
         await this.loadProducts();
       }
     } finally {
-      await this.loader.hide('stock')
+
     }
   }
 
