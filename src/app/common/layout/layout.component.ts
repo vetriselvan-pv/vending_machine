@@ -53,6 +53,7 @@ import {
   close,
   logOut,
   informationCircleOutline,
+  hardwareChipOutline,
 } from 'ionicons/icons';
 import { filter, Subject, takeUntil } from 'rxjs';
 import { UserDetails } from 'src/app/service/user-details/user-details';
@@ -107,6 +108,12 @@ export class LayoutComponent implements OnInit {
       icon: 'repeat-outline',
       route: 'transfer',
       requiredPrivilege: 'stocks.transfer', // Show if stocks.transfer privilege exists
+    },
+    {
+      name: 'Machine Readings',
+      icon: 'hardware-chip-outline',
+      route: 'machine-readings',
+      requiredPrivilege: 'machineReading.view', // Show if machineReading.view privilege exists
     },
     {
       name: 'Employee Assign',
@@ -164,6 +171,7 @@ export class LayoutComponent implements OnInit {
       close,
       logOut,
       informationCircleOutline,
+      hardwareChipOutline,
     });
 
     this._router.events

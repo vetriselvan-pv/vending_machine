@@ -1,117 +1,144 @@
 <ion-content [fullscreen]="true" class="accept-delivery-content ion-padding">
 
-  <!-- Pending Approvals Section -->
-  <ion-card class="pending-card">
+  <!-- Filter Section -->
+  <ion-card class="filter-card">
     <ion-card-content>
-      <div class="section-header">
-        <ion-text class="section-title">Pending Approvals</ion-text>
-        <ion-text class="section-count">{{ pendingDeliveries().length }} pending</ion-text>
+      <div class="filter-section">
+        <ion-item lines="none" class="filter-item">
+          <ion-label position="stacked" class="filter-label">Filter Deliveries</ion-label>
+          <ion-select
+            [(ngModel)]="filterStatus"
+            (ionChange)="onFilterChange($event)"
+            interface="action-sheet"
+            class="filter-select"
+            [ngModelOptions]="{standalone: true}">
+            <ion-select-option value="all">All Deliveries</ion-select-option>
+            <ion-select-option value="pending">Pending Approvals</ion-select-option>
+            <ion-select-option value="accepted">Accepted Deliveries</ion-select-option>
+          </ion-select>
+        </ion-item>
       </div>
-
-      @if(pendingDeliveries() && pendingDeliveries().length > 0) {
-        <div class="table-container">
-          <ion-grid class="data-table">
-            <!-- Table Header -->
-            <ion-row class="table-header">
-              <ion-col size="2" class="header-col">Delivery #</ion-col>
-              <ion-col size="2" class="header-col">Date</ion-col>
-              <ion-col size="3" class="header-col">Supplier</ion-col>
-              <ion-col size="2" class="header-col">Total Qty</ion-col>
-              <ion-col size="2" class="header-col">Status</ion-col>
-              <ion-col size="1" class="header-col">Action</ion-col>
-            </ion-row>
-
-            <!-- Table Rows -->
-            @for (delivery of pendingDeliveries(); track delivery.deliveryId) {
-              <ion-row class="table-row">
-                <ion-col size="2" class="data-col">
-                  <ion-text class="data-text">{{ delivery.deliveryNumber }}</ion-text>
-                </ion-col>
-                <ion-col size="2" class="data-col">
-                  <ion-text class="data-text">{{ delivery.date }}</ion-text>
-                </ion-col>
-                <ion-col size="3" class="data-col">
-                  <ion-text class="data-text">{{ delivery.customerName || delivery.supplier || 'N/A' }}</ion-text>
-                </ion-col>
-                <ion-col size="2" class="data-col">
-                  <ion-text class="data-text">{{ delivery.totalQuantity }}</ion-text>
-                </ion-col>
-                <ion-col size="2" class="data-col">
-                  <ion-text [class]="getStatusBadgeClass(delivery.status)">
-                    {{ delivery.status | titlecase }}
-                  </ion-text>
-                </ion-col>
-                <ion-col size="1" class="data-col action-col">
-                  <ion-button
-                    fill="clear"
-                    size="small"
-                    (click)="openDeliveryModal(delivery)"
-                    class="view-button">
-                    <ion-icon slot="icon-only" name="eye-outline"></ion-icon>
-                  </ion-button>
-                </ion-col>
-              </ion-row>
-            }
-          </ion-grid>
-        </div>
-      } @else {
-        <ion-card class="empty-card">
-          <ion-card-content>
-            <ion-text class="empty-text">No pending deliveries for approval.</ion-text>
-          </ion-card-content>
-        </ion-card>
-      }
     </ion-card-content>
   </ion-card>
 
-  <!-- Accepted Deliveries Section -->
-  <ion-card class="accepted-card">
+  <!-- Deliveries List Section -->
+  <ion-card class="deliveries-card">
     <ion-card-content>
       <div class="section-header">
-        <ion-text class="section-title">Accepted Deliveries</ion-text>
-        <ion-text class="section-count">{{ acceptedDeliveries().length }} accepted</ion-text>
+        <ion-text class="section-title">
+          @if(filterStatus === 'all') {
+            All Deliveries
+          } @else if(filterStatus === 'pending') {
+            Pending Approvals
+          } @else {
+            Accepted Deliveries
+          }
+        </ion-text>
+        <ion-text class="section-count">{{ filteredDeliveries().length }} 
+          @if(filterStatus === 'all') {
+            total
+          } @else if(filterStatus === 'pending') {
+            pending
+          } @else {
+            accepted
+          }
+        </ion-text>
       </div>
 
-      @if(acceptedDeliveries() && acceptedDeliveries().length > 0) {
-        <div class="table-container">
-          <ion-grid class="data-table">
-            <!-- Table Header -->
-            <ion-row class="table-header">
-              <ion-col size="2" class="header-col">Delivery #</ion-col>
-              <ion-col size="2" class="header-col">Date</ion-col>
-              <ion-col size="3" class="header-col">Supplier</ion-col>
-              <ion-col size="2" class="header-col">Accepted Qty</ion-col>
-              <ion-col size="3" class="header-col">Status</ion-col>
-            </ion-row>
-
-            <!-- Table Rows -->
-            @for (delivery of acceptedDeliveries(); track delivery.deliveryId) {
-              <ion-row class="table-row">
-                <ion-col size="2" class="data-col">
-                  <ion-text class="data-text">{{ delivery.deliveryNumber }}</ion-text>
-                </ion-col>
-                <ion-col size="2" class="data-col">
-                  <ion-text class="data-text">{{ delivery.date }}</ion-text>
-                </ion-col>
-                <ion-col size="3" class="data-col">
-                  <ion-text class="data-text">{{ delivery.customerName || delivery.supplier || 'N/A' }}</ion-text>
-                </ion-col>
-                <ion-col size="2" class="data-col">
-                  <ion-text class="data-text quantity-text">{{ delivery.totalAcceptedQty }}</ion-text>
-                </ion-col>
-                <ion-col size="3" class="data-col">
-                  <ion-text [class]="getStatusBadgeClass(delivery.status)">
+      @if(filteredDeliveries() && filteredDeliveries().length > 0) {
+        <div class="delivery-cards-container">
+          @for (delivery of filteredDeliveries(); track delivery.deliveryId) {
+            <ion-card class="delivery-card" [class.accepted-card]="delivery.status === 'accepted'">
+              <ion-card-content>
+                <!-- Top Section: Delivery Number and Status -->
+                <div class="card-header">
+                  <div class="delivery-number-section">
+                    <ion-text class="delivery-label">Delivery No</ion-text>
+                    <ion-text class="delivery-number">#{{ delivery.deliveryNumber }}</ion-text>
+                  </div>
+                  <ion-text [class]="getStatusBadgeClass(delivery.status)" class="status-badge">
                     {{ delivery.status | titlecase }}
                   </ion-text>
-                </ion-col>
-              </ion-row>
-            }
-          </ion-grid>
+                </div>
+
+                <!-- Supplier Section with Logo -->
+                <div class="supplier-section">
+                  <div class="supplier-header">
+                    <div class="customer-logo-container">
+                      @if(delivery.customerLogo) {
+                        <img 
+                          [src]="delivery.customerLogo" 
+                          [alt]="delivery.customerName || delivery.supplier" 
+                          class="customer-logo" 
+                          (error)="delivery.customerLogo = undefined" />
+                      }
+                      @if(!delivery.customerLogo) {
+                        <ion-icon name="business-outline" class="customer-logo-icon"></ion-icon>
+                      }
+                    </div>
+                    <ion-text class="supplier-name">{{ delivery.customerName || delivery.supplier || 'N/A' }}</ion-text>
+                  </div>
+                </div>
+
+                <!-- Products and Quantity Info -->
+                <div class="info-row">
+                  @if(isPendingDelivery(delivery)) {
+                    <div class="info-item">
+                      <ion-icon name="cube-outline" class="info-icon"></ion-icon>
+                      <div class="info-content">
+                        <ion-text class="info-label">Products</ion-text>
+                        <ion-text class="info-value">{{ delivery.products.length || 0 }}</ion-text>
+                      </div>
+                    </div>
+                    <div class="info-item">
+                      <ion-icon name="barcode-outline" class="info-icon"></ion-icon>
+                      <div class="info-content">
+                        <ion-text class="info-label">Total Qty</ion-text>
+                        <ion-text class="info-value">{{ delivery.totalQuantity }}</ion-text>
+                      </div>
+                    </div>
+                  } @else if(isAcceptedDelivery(delivery)) {
+                    <div class="info-item">
+                      <ion-icon name="checkmark-circle-outline" class="info-icon"></ion-icon>
+                      <div class="info-content">
+                        <ion-text class="info-label">Accepted Qty</ion-text>
+                        <ion-text class="info-value accepted-qty-value">{{ delivery.totalAcceptedQty }}</ion-text>
+                      </div>
+                    </div>
+                  }
+                </div>
+
+                <!-- Delivery Date -->
+                <div class="date-section">
+                  <ion-icon name="calendar-outline" class="date-icon"></ion-icon>
+                  <ion-text class="date-text">{{ formatDate(delivery.date) }}</ion-text>
+                </div>
+
+                <!-- View Details Button (for all deliveries) -->
+                <ion-button
+                  expand="block"
+                  fill="outline"
+                  class="view-details-button"
+                  (click)="openDeliveryModal(delivery)">
+                  <ion-icon slot="start" name="eye-outline"></ion-icon>
+                  View Details
+                </ion-button>
+              </ion-card-content>
+            </ion-card>
+          }
         </div>
       } @else {
         <ion-card class="empty-card">
           <ion-card-content>
-            <ion-text class="empty-text">No accepted deliveries yet.</ion-text>
+            <ion-text class="empty-text">
+              @if(filterStatus === 'all') {
+                No deliveries found.
+              } @else if(filterStatus === 'pending') {
+                No pending deliveries for approval.
+              } @else {
+                No accepted deliveries yet.
+              }
+            </ion-text>
           </ion-card-content>
         </ion-card>
       }
@@ -143,7 +170,7 @@
                 </ion-col>
                 <ion-col size="6">
                   <ion-text class="info-label">Date</ion-text>
-                  <ion-text class="info-value">{{ selectedDelivery()?.date }}</ion-text>
+                  <ion-text class="info-value">{{ formatDate(selectedDelivery()?.date) }}</ion-text>
                 </ion-col>
               </ion-row>
             </ion-grid>
@@ -156,11 +183,27 @@
               <ion-card class="product-card">
                 <ion-card-content>
                   <ion-grid class="product-grid">
-                    <!-- Product Name -->
+                    <!-- Product Image and Name -->
                     <ion-row class="product-row">
                       <ion-col size="12">
-                        <ion-text class="product-label">Product Name</ion-text>
-                        <ion-text class="product-name">{{ product.productName }}</ion-text>
+                        <div class="product-header">
+                          <div class="product-image-container">
+                            @if(product.productImage) {
+                              <img 
+                                [src]="product.productImage" 
+                                [alt]="product.productName" 
+                                class="product-image" 
+                                (error)="product.productImage = undefined" />
+                            }
+                            @if(!product.productImage) {
+                              <ion-icon name="image-outline" class="product-icon"></ion-icon>
+                            }
+                          </div>
+                          <div class="product-name-container">
+                            <ion-text class="product-label">Product Name</ion-text>
+                            <ion-text class="product-name">{{ product.productName }}</ion-text>
+                          </div>
+                        </div>
                       </ion-col>
                     </ion-row>
 
@@ -176,7 +219,7 @@
                       </ion-col>
                     </ion-row>
 
-                    <!-- Return Qty Input -->
+                    <!-- Return Qty Input (editable only for pending deliveries) -->
                     <ion-row class="product-row">
                       <ion-col size="12">
                         <div class="input-wrapper">
@@ -189,6 +232,8 @@
                               [max]="product.deliveredQty"
                               [min]="0"
                               placeholder="Enter return quantity"
+                              [disabled]="!isDeliveryEditable() || product.status === 'rejected'"
+                              [readonly]="!isDeliveryEditable()"
                               class="return-input">
                             </ion-input>
                           </ion-item>
@@ -196,49 +241,78 @@
                       </ion-col>
                     </ion-row>
 
-                    <!-- Accept/Reject Buttons -->
-                    <ion-row class="product-row action-row">
-                      <ion-col size="6">
-                        <ion-button
-                          expand="block"
-                          fill="outline"
-                          color="success"
-                          [class.accepted-btn]="product.status === 'accepted'"
-                          (click)="acceptProduct(i)"
-                          [disabled]="product.status === 'accepted'">
-                          <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
-                          Accept
-                        </ion-button>
-                      </ion-col>
-                      <ion-col size="6">
-                        <ion-button
-                          expand="block"
-                          fill="outline"
-                          color="danger"
-                          [class.rejected-btn]="product.status === 'rejected'"
-                          (click)="rejectProduct(i)"
-                          [disabled]="product.status === 'rejected'">
-                          <ion-icon slot="start" name="close-circle-outline"></ion-icon>
-                          Reject
-                        </ion-button>
-                      </ion-col>
-                    </ion-row>
+                    <!-- Return Reason Dropdown (only show if return qty > 0, editable only for pending) -->
+                    @if(product.returnQty > 0) {
+                      <ion-row class="product-row">
+                        <ion-col size="12">
+                          <div class="input-wrapper">
+                            <ion-label class="input-label">Return Reason</ion-label>
+                            <ion-item lines="none" class="input-item">
+                              <ion-select
+                                [value]="product.returnReason || ''"
+                                (ionChange)="updateReturnReason(i, $event.detail.value)"
+                                placeholder="Select Reason"
+                                interface="action-sheet"
+                                [disabled]="!isDeliveryEditable()"
+                                class="return-reason-select">
+                                <ion-select-option value="">Select Reason</ion-select-option>
+                                <ion-select-option value="damaged">Damaged</ion-select-option>
+                                <ion-select-option value="qty_mismatched">Qty Mismatched</ion-select-option>
+                                <ion-select-option value="others">Others</ion-select-option>
+                              </ion-select>
+                            </ion-item>
+                          </div>
+                        </ion-col>
+                      </ion-row>
+                    }
+
+                    <!-- Accept/Reject Buttons (only show for pending deliveries) -->
+                    @if(isDeliveryEditable()) {
+                      <ion-row class="product-row action-row">
+                        <ion-col size="6">
+                          <ion-button
+                            expand="block"
+                            fill="outline"
+                            color="success"
+                            [class.accepted-btn]="product.status === 'accepted'"
+                            (click)="acceptProduct(i)"
+                            [disabled]="product.status === 'accepted'">
+                            <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
+                            Accept
+                          </ion-button>
+                        </ion-col>
+                        <ion-col size="6">
+                          <ion-button
+                            expand="block"
+                            fill="outline"
+                            color="danger"
+                            [class.rejected-btn]="product.status === 'rejected'"
+                            (click)="rejectProduct(i)"
+                            [disabled]="product.status === 'rejected'">
+                            <ion-icon slot="start" name="close-circle-outline"></ion-icon>
+                            Reject
+                          </ion-button>
+                        </ion-col>
+                      </ion-row>
+                    }
                   </ion-grid>
                 </ion-card-content>
               </ion-card>
             }
           </div>
 
-          <!-- Submit Button -->
-          <div class="submit-section">
-            <ion-button
-              expand="block"
-              size="large"
-              class="submit-button"
-              (click)="submitDelivery()">
-              <ion-text><strong>Submit</strong></ion-text>
-            </ion-button>
-          </div>
+          <!-- Submit Button (only for pending deliveries) -->
+          @if(isDeliveryEditable()) {
+            <div class="submit-section">
+              <ion-button
+                expand="block"
+                size="large"
+                class="submit-button"
+                (click)="submitDelivery()">
+                <ion-text><strong>Submit</strong></ion-text>
+              </ion-button>
+            </div>
+          }
         }
       </ion-content>
     </ng-template>

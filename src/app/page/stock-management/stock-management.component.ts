@@ -17,12 +17,14 @@ import {
   IonInput,
   IonSelect,
   IonSelectOption,
+  IonSpinner,
   ToastController,
   LoadingController
 } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 import { addIcons } from 'ionicons';
-import { addCircleOutline, trashOutline, informationCircleOutline } from 'ionicons/icons';
+import { addCircleOutline, trashOutline, informationCircleOutline, imageOutline } from 'ionicons/icons';
+import { environment } from 'src/environments/environment';
 import { SearchableDropdownComponent } from 'src/app/common/searchable-dropdown/searchable-dropdown.component';
 import { ProductService } from 'src/app/service/product/product.service';
 import { AttendanceService } from 'src/app/service/attendance/attendance.service';
@@ -34,7 +36,10 @@ import { Loader } from 'src/app/service/loader/loader';
 interface StockItem {
   productId: string;
   productName: string;
+  productImage?: string;
   closingStock: number;
+  currentAvailableQty?: number; // Current available quantity
+  productUnit?: string; // Product unit
 }
 
 @Component({
@@ -49,7 +54,6 @@ interface StockItem {
     IonRow,
     IonCol,
     IonGrid,
-    SearchableDropdownComponent,
     IonButton,
     IonCard,
     IonCardContent,
@@ -60,6 +64,7 @@ interface StockItem {
     IonInput,
     IonSelect,
     IonSelectOption,
+    IonSpinner,
   ],
 })
 export class StockManagementComponent implements OnInit, ViewWillEnter {
@@ -70,24 +75,18 @@ export class StockManagementComponent implements OnInit, ViewWillEnter {
   private toast = inject(Toast);
   private loader = inject(Loader);
 
-  addedStocks = signal<StockItem[]>([]);
-  selectedProduct: any = null;
+  productStocks = signal<StockItem[]>([]);
   selectedCustomerId: number | null = null;
-  closingStock: number | null = null;
-  machineReading: string = '';
+  loadingProducts: boolean = false; // Track if products are being loaded
 
-  stocksList: { id: string; text: string }[] = [];
+  stocksList: { id: string; text: string; productImage?: string }[] = [];
   customers: { id: number; name: string; company_name?: string }[] = [];
-  machines: { id: number; name: string; machine_code?: string }[] = [];
   hasAssignedCustomers: boolean = false;
+  customersLoaded: boolean = false; // Track if customer API call has completed
   isStockAvailabilityModalOpen: boolean = false;
 
   // Store product stock data for validation (product_id -> stock data)
   productStockDataMap: Map<number, { current_available_qty: number; product_name: string; product_unit: string }> = new Map();
-
-  // Store machine readings (machine_id -> reading)
-  machineReadings: Map<number, string> = new Map();
-  selectedMachineId: number | null = null;
 
   stockManagementForm = this._fb.nonNullable.group({});
 
@@ -95,7 +94,8 @@ export class StockManagementComponent implements OnInit, ViewWillEnter {
     addIcons({
       addCircleOutline,
       trashOutline,
-      informationCircleOutline
+      informationCircleOutline,
+      imageOutline
     });
   }
 
@@ -112,27 +112,28 @@ export class StockManagementComponent implements OnInit, ViewWillEnter {
   }
 
   async initializeData() {
-    // Load customers and machines first
-    await Promise.all([
-      this.loadCustomers(),
-      this.loadMachines()
-    ]);
+    // Load customers
+    await this.loadCustomers();
 
     // After customers are loaded, check if we need to load products
     // The loadCustomers method handles auto-selection and triggers product loading
     // But we also need to handle the case where customer was already selected
     if (this.hasAssignedCustomers && this.selectedCustomerId) {
       // Customer is already selected, load products with stock data
+      this.loadingProducts = true;
       await this.loadProductsWithStockData();
       // Load saved stock availability data for today
       await this.loadSavedStockAvailability();
+      this.loadingProducts = false;
     } else if (this.hasAssignedCustomers) {
-      // If no customer selected yet, just load products list
-      await this.loadProducts();
+      // If no customer selected yet, clear the products list
+      this.stocksList = [];
+      this.loadingProducts = false;
     }
   }
 
   async loadCustomers() {
+    this.customersLoaded = false; // Reset flag before API call
     try {
       const response = await this.attendanceService.getMyAssignedCustomers();
       if (response?.data?.success && response.data.data) {
@@ -156,6 +157,8 @@ export class StockManagementComponent implements OnInit, ViewWillEnter {
       // Auth errors are handled by interceptor
       this.customers = [];
       this.hasAssignedCustomers = false;
+    } finally {
+      this.customersLoaded = true; // Mark as loaded after API call completes
     }
   }
 
@@ -163,114 +166,28 @@ export class StockManagementComponent implements OnInit, ViewWillEnter {
     this.selectedCustomerId = event.detail.value;
 
     // Clear previous data
-    this.addedStocks.set([]);
-    this.machineReadings.clear();
+    this.productStocks.set([]);
+    this.stocksList = [];
+    this.loadingProducts = true;
 
     // Load products with stock availability data when customer changes
     if (this.selectedCustomerId) {
       await this.loadProductsWithStockData();
       // Load saved stock availability data for today
       await this.loadSavedStockAvailability();
-    } else {
-      // If no customer selected, just load products list
-      await this.loadProducts();
     }
+    this.loadingProducts = false;
   }
 
-  async loadMachines() {
-    try {
-      const response = await this.attendanceService.getMyAssignedMachines();
-      if (response?.data?.success && response.data.data) {
-        this.machines = response.data.data.map((machine: any) => ({
-          id: machine.id,
-          name: machine.name || machine.machine_code || 'Machine #' + machine.id,
-          machine_code: machine.machine_code
-        }));
-      } else {
-        this.machines = [];
-      }
-    } catch (error: any) {
-      console.error('Error loading assigned machines:', error);
-      // Auth errors are handled by interceptor
-      this.machines = [];
-    }
-  }
 
-  onMachineSelect(event: any) {
-    this.selectedMachineId = event.detail.value;
-  }
-
-  addMachineReading() {
-    if (!this.selectedMachineId || !this.machineReading || this.machineReading.trim() === '') {
-      return;
-    }
-
-    // Add or update machine reading
-    this.machineReadings.set(this.selectedMachineId, this.machineReading.trim());
-
-    // Reset form
-    this.selectedMachineId = null;
-    this.machineReading = '';
-
-    this.toast.showSuccess('Machine reading added successfully');
-  }
-
-  removeMachineReading(machineId: number) {
-    this.machineReadings.delete(machineId);
-    this.toast.showSuccess('Machine reading removed');
-  }
-
-  getMachineName(machineId: number): string {
-    const machine = this.machines.find(m => m.id === machineId);
-    return machine ? machine.name : 'Machine #' + machineId;
-  }
-
-  getMachineReadingsArray(): Array<[number, string]> {
-    return Array.from(this.machineReadings.entries());
-  }
-
-  async loadProducts() {
-
-
-    // await this.loader.show('Loading products...','product')
-
-    try {
-      const response = await this.productService.getProducts({
-        status: 'active',
-        per_page: 100 // Get all active products
-      });
-
-
-      // CapacitorHttp returns response.data as the JSON response
-      // The structure is: { success: true, message: "...", data: { data: [...], ... } }
-      const responseData = response?.data;
-
-      if (responseData?.success && responseData?.data?.data) {
-        // Clear stock data map when loading regular products (no stock data available)
-        this.productStockDataMap.clear();
-
-        // Transform products to dropdown format
-        this.stocksList = responseData.data.data.map((product: any) => ({
-          id: String(product.id),
-          text: product.name || product.code || 'Unknown Product'
-        }));
-      } else {
-        console.error('Failed to load products - Invalid response structure:', responseData);
-        await this.toast.showFailure('Failed to load products');
-      }
-    } catch (error: any) {
-      console.error('Error loading products:', error);
-      // Auth errors are handled by interceptor
-      if (error?.status !== 401 && error?.status !== 403) {
-        await this.toast.showFailure('Error loading products. Please try again.');
-      }
-    } finally {
-      // await this.loader.hide('product');
-    }
-  }
+  // Removed loadProducts() method - we only use customer-specific products API
+  // async loadProducts() {
+  //   // This method is no longer used - we only load products assigned to the selected customer
+  //   // via loadProductsWithStockData() which calls getCustomerProducts() API
+  // }
 
   /**
-   * Load products with stock availability data (like EBMS app)
+   * Load products assigned to the selected customer
    * This is called when customer dropdown changes
    */
   async loadProductsWithStockData() {
@@ -278,63 +195,104 @@ export class StockManagementComponent implements OnInit, ViewWillEnter {
       return;
     }
 
-
     try {
-      // Get today's date in YYYY-MM-DD format
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, '0');
-      const day = String(today.getDate()).padStart(2, '0');
-      const dateStr = `${year}-${month}-${day}`;
-
-      // Call data-simple API with customer_id and date
-      const response = await this.stockAvailabilityService.getAvailabilityDataSimple(
-        this.selectedCustomerId,
-        dateStr
-      );
-
-
+      // Load customer assigned products
+      const response = await this.productService.getCustomerProducts(this.selectedCustomerId);
       const responseData = response?.data;
 
-      if (responseData?.success && responseData?.data?.products) {
+      if (responseData?.success && responseData?.data) {
         // Clear previous stock data map
         this.productStockDataMap.clear();
 
-        // Transform products to dropdown format with stock data
-        this.stocksList = responseData.data.products.map((product: any) => {
-          // Store product stock data for validation
-          this.productStockDataMap.set(product.product_id, {
-            current_available_qty: product.calculated_available_qty || product.current_available_qty || 0,
-            product_name: product.product_name,
-            product_unit: product.product_unit
+        // Transform assigned products to product stocks list
+        const products: StockItem[] = responseData.data
+          .filter((cp: any) => cp.status === 'active' && cp.product) // Only active assignments with product
+          .map((cp: any) => {
+            const product = cp.product;
+
+            // Store product data for validation (if needed)
+            this.productStockDataMap.set(product.id, {
+              current_available_qty: 0, // Will be updated if stock data is available
+              product_name: product.name || product.code || 'Unknown Product',
+              product_unit: product.unit || ''
+            });
+
+            return {
+              productId: String(product.id),
+              productName: product.name || product.code || 'Unknown Product',
+              productImage: product.product_image ? this.getProductImageUrl(product.product_image) : undefined,
+              closingStock: 0, // Default to 0, will be updated from saved data
+              currentAvailableQty: 0, // Will be updated from stock availability data
+              productUnit: product.unit || ''
+            };
           });
 
-          return {
-            id: String(product.product_id),
-            text: `${product.product_name} (${product.product_code}) - Available: ${product.calculated_available_qty} ${product.product_unit}`
-          };
-        });
-        console.log('stocks completed 1')
-        // await this.loader.hide('stocks')
+        // Set product stocks
+        this.productStocks.set(products);
+
+        // After loading customer products, also load stock availability data if needed
+        // Get today's date in YYYY-MM-DD format
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const dateStr = `${year}-${month}-${day}`;
+
+        // Try to get stock availability data to update product stock info
+        try {
+          const stockResponse = await this.stockAvailabilityService.getAvailabilityDataSimple(
+            this.selectedCustomerId,
+            dateStr
+          );
+          const stockData = stockResponse?.data;
+
+          if (stockData?.success && stockData?.data?.products) {
+            // Update product stock data map with actual stock availability
+            stockData.data.products.forEach((product: any) => {
+              if (this.productStockDataMap.has(product.product_id)) {
+                const existing = this.productStockDataMap.get(product.product_id)!;
+                const availableQty = product.calculated_available_qty || product.current_available_qty || 0;
+                const productUnit = product.product_unit || existing.product_unit;
+
+                this.productStockDataMap.set(product.product_id, {
+                  current_available_qty: availableQty,
+                  product_name: existing.product_name,
+                  product_unit: productUnit
+                });
+
+                // Update productStocks with availability data
+                this.productStocks.update(stocks => {
+                  return stocks.map(stock => {
+                    if (stock.productId === String(product.product_id)) {
+                      return {
+                        ...stock,
+                        currentAvailableQty: availableQty,
+                        productUnit: productUnit
+                      };
+                    }
+                    return stock;
+                  });
+                });
+              }
+            });
+          }
+        } catch (stockError) {
+          // Stock data loading is optional, continue without it
+          console.log('Stock availability data not available, continuing with product list only');
+        }
       } else {
-        console.error('Failed to load products with stock data - Invalid response structure:', responseData);
-        await this.toast.showFailure('Failed to load products with stock data');
-                console.log('stocks completed 2')
-              // await this.loader.hide('stocks')
-        // Fallback to regular product loading
-        await this.loadProducts();
+        console.error('Failed to load customer products - Invalid response structure:', responseData);
+        await this.toast.showFailure('Failed to load customer products');
+        // Clear products list on error
+        this.stocksList = [];
       }
     } catch (error: any) {
-      console.error('Error loading products with stock data:', error);
-                console.log('stocks completed 3')
-
-      //  await this.loader.hide('stocks')
+      console.error('Error loading customer products:', error);
       // Auth errors are handled by interceptor
       if (error?.status !== 401 && error?.status !== 403) {
-        await this.toast.showFailure('Error loading products with stock data. Please try again.');
-
-        // Fallback to regular product loading
-        await this.loadProducts();
+        await this.toast.showFailure('Error loading customer products. Please try again.');
+        // Clear products list on error
+        this.stocksList = [];
       }
     } finally {
 
@@ -364,21 +322,22 @@ export class StockManagementComponent implements OnInit, ViewWillEnter {
       if (responseData?.success && responseData?.data) {
         const savedData = responseData.data;
 
-        // Load saved products into addedStocks
+        // Update product stocks with saved closing stock values
         if (savedData.products && savedData.products.length > 0) {
-          const savedStocks: StockItem[] = savedData.products.map((product: any) => ({
-            productId: String(product.product_id),
-            productName: product.product_name || product.product_code || 'Product',
-            closingStock: product.closing_qty || 0
-          }));
-          this.addedStocks.set(savedStocks);
-        }
-
-        // Load saved machine readings
-        if (savedData.machines && savedData.machines.length > 0) {
-          this.machineReadings.clear();
-          savedData.machines.forEach((machine: any) => {
-            this.machineReadings.set(machine.machine_id, machine.reading || String(machine.reading_value || ''));
+          this.productStocks.update(stocks => {
+            return stocks.map(stock => {
+              const savedProduct = savedData.products.find((p: any) => String(p.product_id) === stock.productId);
+              if (savedProduct) {
+                return {
+                  ...stock,
+                  closingStock: savedProduct.closing_qty || 0,
+                  // Preserve existing availability data if not updated
+                  currentAvailableQty: stock.currentAvailableQty !== undefined ? stock.currentAvailableQty : 0,
+                  productUnit: stock.productUnit || ''
+                };
+              }
+              return stock;
+            });
           });
         }
       }
@@ -390,73 +349,52 @@ export class StockManagementComponent implements OnInit, ViewWillEnter {
 
 
 
-  onProductSelect(product: any) {
-    this.selectedProduct = product;
+  getProductImageUrl(imagePath: string): string {
+    if (!imagePath) return '';
+    const fullPath = imagePath.startsWith('files/') ? imagePath : `files/${imagePath}`;
+    return `${environment.baseURL}/${fullPath}`;
   }
 
-  async addStock() {
-    if (!this.selectedProduct || !this.closingStock || this.closingStock <= 0) {
-      return;
-    }
+  updateClosingStock(productId: string, value: number) {
+    if (value < 0) value = 0;
 
-    const productId = parseInt(this.selectedProduct.id);
+    const productIdNum = parseInt(productId);
 
-    // Check if product stock data exists and validate closing stock
-    if (this.productStockDataMap.has(productId)) {
-      const stockData = this.productStockDataMap.get(productId)!;
+    // Validate: closing stock should not exceed current available quantity
+    if (this.productStockDataMap.has(productIdNum)) {
+      const stockData = this.productStockDataMap.get(productIdNum)!;
       const currentAvailableQty = stockData.current_available_qty;
 
-      // Validate: closing stock should not exceed current available quantity
-      if (this.closingStock > currentAvailableQty) {
-        await this.toast.showFailure(
-          `Closing stock (${this.closingStock}) cannot exceed current available quantity (${currentAvailableQty} ${stockData.product_unit}) for ${stockData.product_name}`
+      if (value > currentAvailableQty) {
+        this.toast.showFailure(
+          `Closing stock cannot exceed current available quantity (${currentAvailableQty} ${stockData.product_unit})`
         );
-        return; // Don't add stock if validation fails
+        value = currentAvailableQty; // Set to max available
       }
     }
 
-      // Check if product already exists
-      const existingIndex = this.addedStocks().findIndex(
-        stock => stock.productId === this.selectedProduct.id
-      );
-
-      if (existingIndex >= 0) {
-        // Update existing stock
-        this.addedStocks.update(stocks => {
-          const updated = [...stocks];
-          updated[existingIndex] = {
-            productId: this.selectedProduct.id,
-            productName: this.selectedProduct.text,
-            closingStock: this.closingStock!
+    // Update the closing stock for the product
+    this.productStocks.update(stocks => {
+      return stocks.map(stock => {
+        if (stock.productId === productId) {
+          return {
+            ...stock,
+            closingStock: value
           };
-          return updated;
-        });
-      await this.toast.showSuccess('Stock updated successfully');
-      } else {
-        // Add new stock
-        this.addedStocks.update(stocks => [
-          ...stocks,
-          {
-            productId: this.selectedProduct.id,
-            productName: this.selectedProduct.text,
-            closingStock: this.closingStock!
-          }
-        ]);
-      await this.toast.showSuccess('Stock added successfully');
-      }
-
-      // Reset form (but keep machine reading)
-      this.selectedProduct = null;
-      this.closingStock = null;
+        }
+        return stock;
+      });
+    });
   }
 
-  removeStock(index: number) {
-    this.addedStocks.update(stocks => stocks.filter((_, i) => i !== index));
+  hasValidClosingStocks(): boolean {
+    // Check if at least one product has closing stock > 0
+    return this.productStocks().some(stock => stock.closingStock > 0);
   }
 
   async updateStock() {
-    if (this.addedStocks().length === 0) {
-      await this.toast.showWarning('Please add at least one product with closing stock');
+    if (!this.hasValidClosingStocks()) {
+      await this.toast.showWarning('Please enter closing stock for at least one product');
       return;
     }
 
@@ -482,31 +420,22 @@ export class StockManagementComponent implements OnInit, ViewWillEnter {
       // Format time as HH:mm (API expects H:i format, not H:i:s)
       const timeStr = `${hours}:${minutes}`;
 
-      // Transform addedStocks to products array format
-      const products = this.addedStocks().map(stock => ({
-        product_id: parseInt(stock.productId),
-        closing_qty: stock.closingStock,
-        notes: '' // You can add notes field later if needed
-      }));
+      // Transform productStocks to products array format (only include products with closing stock > 0)
+      const products = this.productStocks()
+        .filter(stock => stock.closingStock > 0)
+        .map(stock => ({
+          product_id: parseInt(stock.productId),
+          closing_qty: stock.closingStock,
+          notes: '' // You can add notes field later if needed
+        }));
 
-      // Transform machine readings to machines array format
-      const machines = Array.from(this.machineReadings.entries()).map(([machineId, reading]) => ({
-        machine_id: machineId,
-        reading: reading
-      }));
-
-      // Prepare request data
+      // Prepare request data (no machine readings in this component)
       const requestData: any = {
         customer_id: this.selectedCustomerId,
         date: dateStr,
         time: timeStr,
         products: products
       };
-
-      // Add machines array if there are any machine readings
-      if (machines.length > 0) {
-        requestData.machines = machines;
-      }
 
 
       // Call the API
@@ -516,12 +445,6 @@ export class StockManagementComponent implements OnInit, ViewWillEnter {
 
       if (responseData?.success) {
         await this.toast.showSuccess('Closing stocks saved successfully!');
-
-        // Clear the added stocks list and machine readings
-        this.addedStocks.set([]);
-        this.machineReadings.clear();
-        this.machineReading = '';
-        this.selectedMachineId = null;
 
         // Reload products with updated stock data and saved stock availability
         if (this.selectedCustomerId) {

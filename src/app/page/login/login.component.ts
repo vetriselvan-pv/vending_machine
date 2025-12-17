@@ -80,7 +80,14 @@ export class LoginComponent implements OnInit {
     if (this.loginForm.valid) {
       this.loader.show('Logging In...', 'login');
       const url = environment.baseURL + environment.loginURL;
-      this.httpProvider.httpPostRequest(url, this.loginForm.value).subscribe({
+      
+      // Add ismobile flag for mobile app login
+      const loginPayload = {
+        ...this.loginForm.value,
+        ismobile: true
+      };
+      
+      this.httpProvider.httpPostRequest(url, loginPayload).subscribe({
         next: async (res) => {
           // Check response structure - CapacitorHttp wraps response in data property
           const responseData = res?.data || res;

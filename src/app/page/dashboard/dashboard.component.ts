@@ -23,8 +23,6 @@ import {
   IonSelect,
   IonSelectOption,
   IonIcon,
-  ToastController,
-  LoadingController,
 } from '@ionic/angular/standalone';
 import { FormsModule } from '@angular/forms';
 import {
@@ -40,6 +38,7 @@ import { addIcons } from 'ionicons';
 import { informationCircleOutline } from 'ionicons/icons';
 import { Toast } from 'src/app/service/toast/toast';
 import { Loader } from 'src/app/service/loader/loader';
+import { Geolocation, Position } from '@capacitor/geolocation';
 
 interface Customer {
   id: number;
@@ -114,6 +113,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   userName: string = '';
   greeting: string = '';
   hasMarkAttendancePrivilege: boolean = false;
+  isUser: 'user' | 'admin' | 'location' | '' = '';
 
   private userDetails = inject(UserDetails);
 
@@ -263,9 +263,11 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         this.markAttendanceDates();
       }, 1000);
     }
+
+    this.isUser = (await this.userDetails.punchType());
   }
 
-  ngAfterViewInit() {
+  async ngAfterViewInit() {
     // Mark dates after view is initialized
     setTimeout(() => {
       this.markAttendanceDates();
@@ -375,7 +377,9 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
   async punchIn() {
     // Check if customer is selected
-    if (!this.selectedCustomerId) {
+    const loginType = await this.userDetails.punchType();
+
+    if (loginType === 'user' && !this.selectedCustomerId) {
       this.toast.showWarning('Please select a customer first');
       return;
     }
@@ -385,49 +389,143 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    await this.loader.show('Processing...','punchIn');
+    if (loginType === 'user') {
+      await this.loader.show('Processing...', 'punchIn');
 
-    try {
-      // Open camera
-      const image = await Camera.getPhoto({
-        quality: 90,
-        allowEditing: false,
-        resultType: CameraResultType.DataUrl,
-        source: CameraSource.Camera,
-        direction: CameraDirection.Front,
-      });
+      try {
+        // Open camera
+        const image = await Camera.getPhoto({
+          quality: 90,
+          allowEditing: false,
+          resultType: CameraResultType.DataUrl,
+          source: CameraSource.Camera,
+          direction: CameraDirection.Front,
+        });
 
-      // Submit to API
-      const response = await this.attendanceService.punchIn({
-        customer_id: this.selectedCustomerId!,
-        selfie_image: image.dataUrl,
-      });
+        // Submit to API
+        const response = await this.attendanceService.punchIn({
+          customer_id: this.selectedCustomerId!,
+          selfie_image: image.dataUrl,
+        });
 
-      await this.loader.hide('punchIn');
+        await this.loader.hide('punchIn');
 
-      if (response?.data?.success) {
-        this.toast.showSuccess(
-          'Login Successful! Access the side menu to continue your work or explore other options.'
-        );
-        // Reload today's attendance
-        await this.loadTodayAttendance();
+        if (response?.data?.success) {
+          this.toast.showSuccess(
+            'Login Successful! Access the side menu to continue your work or explore other options.'
+          );
+          // Reload today's attendance
+          await this.loadTodayAttendance();
 
-        // Refresh attendance dates for calendar and update display
-        await this.loadAttendanceDatesForCalendar();
-        setTimeout(() => {
-          this.markAttendanceDates();
-        }, 500);
-      } else {
-        this.toast.showFailure(response?.data?.message || 'Failed to punch in');
+          // Refresh attendance dates for calendar and update display
+          await this.loadAttendanceDatesForCalendar();
+          setTimeout(() => {
+            this.markAttendanceDates();
+          }, 500);
+        } else {
+          this.toast.showFailure(
+            response?.data?.message || 'Failed to punch in'
+          );
+        }
+      } catch (error: any) {
+        await this.loader.hide('punchIn');
+
+        // Auth errors are handled by interceptor
+        if (error?.data?.message) {
+          this.toast.showFailure(error.data.message);
+        } else {
+          this.toast.showFailure('Failed to punch in. Please try again.');
+        }
       }
-    } catch (error: any) {
-      await this.loader.hide('punchIn');
+    } else if (loginType === 'admin') {
+      await this.loader.show('Processing...', 'punchIn');
 
-      // Auth errors are handled by interceptor
-      if (error?.data?.message) {
-        this.toast.showFailure(error.data.message);
-      } else {
-        this.toast.showFailure('Failed to punch in. Please try again.');
+      try {
+        // Open camera
+        const image = await Camera.getPhoto({
+          quality: 90,
+          allowEditing: false,
+          resultType: CameraResultType.DataUrl,
+          source: CameraSource.Camera,
+          direction: CameraDirection.Front,
+        });
+
+        // Submit to API
+        const response = await this.attendanceService.punchIn({
+          customer_id: 0,
+          selfie_image: image.dataUrl,
+        });
+
+        await this.loader.hide('punchIn');
+
+        if (response?.data?.success) {
+          this.toast.showSuccess(
+            'Login Successful! Access the side menu to continue your work or explore other options.'
+          );
+          // Reload today's attendance
+          await this.loadTodayAttendance();
+
+          // Refresh attendance dates for calendar and update display
+          await this.loadAttendanceDatesForCalendar();
+          setTimeout(() => {
+            this.markAttendanceDates();
+          }, 500);
+        } else {
+          this.toast.showFailure(
+            response?.data?.message || 'Failed to punch in'
+          );
+        }
+      } catch (error: any) {
+        await this.loader.hide('punchIn');
+
+        // Auth errors are handled by interceptor
+        if (error?.data?.message) {
+          this.toast.showFailure(error.data.message);
+        } else {
+          this.toast.showFailure('Failed to punch in. Please try again.');
+        }
+      }
+    } else if (loginType === 'location') {
+      await this.loader.show('Processing...', 'punchIn');
+
+      try {
+        const position: Position = await Geolocation.getCurrentPosition();
+        // Submit to API
+        const response = await this.attendanceService.locationpunch({
+          action: 'punch_in',
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          type: 'location',
+        });
+
+        await this.loader.hide('punchIn');
+
+        if (response?.data?.success) {
+          this.toast.showSuccess(
+            'Login Successful! Access the side menu to continue your work or explore other options.'
+          );
+          // Reload today's attendance
+          await this.loadTodayAttendance();
+
+          // Refresh attendance dates for calendar and update display
+          await this.loadAttendanceDatesForCalendar();
+          setTimeout(() => {
+            this.markAttendanceDates();
+          }, 500);
+        } else {
+          this.toast.showFailure(
+            response?.data?.message || 'Failed to punch in'
+          );
+        }
+      } catch (error: any) {
+        await this.loader.hide('punchIn');
+
+        // Auth errors are handled by interceptor
+        if (error?.data?.message) {
+          this.toast.showFailure(error.data.message);
+        } else {
+          this.toast.showFailure('Failed to punch in. Please try again.');
+        }
       }
     }
   }
@@ -437,48 +535,135 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       this.toast.showWarning('You have not punched in today');
       return;
     }
-    await this.loader.show('Processing...','punchOut');
+    await this.loader.show('Processing...', 'punchOut');
+    const loginType = await this.userDetails.punchType();
+    if (loginType === 'user') {
+      try {
+        // Open camera
+        const image = await Camera.getPhoto({
+          quality: 90,
+          allowEditing: false,
+          resultType: CameraResultType.DataUrl,
+          source: CameraSource.Camera,
+          direction: CameraDirection.Front,
+        });
 
-    try {
-      // Open camera
-      const image = await Camera.getPhoto({
-        quality: 90,
-        allowEditing: false,
-        resultType: CameraResultType.DataUrl,
-        source: CameraSource.Camera,
-        direction: CameraDirection.Front,
-      });
+        // Submit to API
+        const response = await this.attendanceService.punchOut({
+          selfie_image: image.dataUrl,
+        });
 
-      // Submit to API
-      const response = await this.attendanceService.punchOut({
-        selfie_image: image.dataUrl,
-      });
+        await this.loader.hide('punchOut');
 
-      await this.loader.hide('punchOut');
+        if (response?.data?.success) {
+          this.toast.showSuccess('Punched out successfully!');
+          // Reload today's attendance
+          await this.loadTodayAttendance();
 
-      if (response?.data?.success) {
-        this.toast.showSuccess('Punched out successfully!');
-        // Reload today's attendance
-        await this.loadTodayAttendance();
+          // Refresh attendance dates for calendar and update display
+          await this.loadAttendanceDatesForCalendar();
+          setTimeout(() => {
+            this.markAttendanceDates();
+          }, 500);
+        } else {
+          this.toast.showFailure(
+            response?.data?.message || 'Failed to punch out'
+          );
+        }
+      } catch (error: any) {
+        await this.loader.hide('punchOut');
 
-        // Refresh attendance dates for calendar and update display
-        await this.loadAttendanceDatesForCalendar();
-        setTimeout(() => {
-          this.markAttendanceDates();
-        }, 500);
-      } else {
-        this.toast.showFailure(
-          response?.data?.message || 'Failed to punch out'
-        );
+        // Auth errors are handled by interceptor
+        if (error?.data?.message) {
+          this.toast.showFailure(error.data.message);
+        } else {
+          this.toast.showFailure('Failed to punch out. Please try again.');
+        }
       }
-    } catch (error: any) {
-      await this.loader.hide('punchOut');
+    } else if (loginType === 'admin') {
+      try {
+        // Open camera
+        const image = await Camera.getPhoto({
+          quality: 90,
+          allowEditing: false,
+          resultType: CameraResultType.DataUrl,
+          source: CameraSource.Camera,
+          direction: CameraDirection.Front,
+        });
 
-      // Auth errors are handled by interceptor
-      if (error?.data?.message) {
-        this.toast.showFailure(error.data.message);
-      } else {
-        this.toast.showFailure('Failed to punch out. Please try again.');
+        // Submit to API
+        const response = await this.attendanceService.punchOut({
+          selfie_image: image.dataUrl,
+        });
+
+        await this.loader.hide('punchOut');
+
+        if (response?.data?.success) {
+          this.toast.showSuccess('Punched out successfully!');
+          // Reload today's attendance
+          await this.loadTodayAttendance();
+
+          // Refresh attendance dates for calendar and update display
+          await this.loadAttendanceDatesForCalendar();
+          setTimeout(() => {
+            this.markAttendanceDates();
+          }, 500);
+        } else {
+          this.toast.showFailure(
+            response?.data?.message || 'Failed to punch out'
+          );
+        }
+      } catch (error: any) {
+        await this.loader.hide('punchOut');
+
+        // Auth errors are handled by interceptor
+        if (error?.data?.message) {
+          this.toast.showFailure(error.data.message);
+        } else {
+          this.toast.showFailure('Failed to punch out. Please try again.');
+        }
+      }
+    } else if (loginType === 'location') {
+      try {
+        // Open camera
+
+        // Submit to API
+
+        const position: Position = await Geolocation.getCurrentPosition();
+        // Submit to API
+        const response = await this.attendanceService.locationpunch({
+          action: 'punch_out',
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          type: 'location',
+        });
+
+        await this.loader.hide('punchOut');
+
+        if (response?.data?.success) {
+          this.toast.showSuccess('Punched out successfully!');
+          // Reload today's attendance
+          await this.loadTodayAttendance();
+
+          // Refresh attendance dates for calendar and update display
+          await this.loadAttendanceDatesForCalendar();
+          setTimeout(() => {
+            this.markAttendanceDates();
+          }, 500);
+        } else {
+          this.toast.showFailure(
+            response?.data?.message || 'Failed to punch out'
+          );
+        }
+      } catch (error: any) {
+        await this.loader.hide('punchOut');
+
+        // Auth errors are handled by interceptor
+        if (error?.data?.message) {
+          this.toast.showFailure(error.data.message);
+        } else {
+          this.toast.showFailure('Failed to punch out. Please try again.');
+        }
       }
     }
   }

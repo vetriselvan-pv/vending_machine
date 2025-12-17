@@ -75,5 +75,18 @@ export class ProductService {
       }
     });
   }
+
+  /**
+   * Get products assigned to a customer
+   */
+  async getCustomerProducts(customerId: number): Promise<any> {
+    const customerApiUrl = `${environment.baseURL}/api/customers`;
+    return await this.authInterceptor.get({
+      url: `${customerApiUrl}/${customerId}/products`,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+  }
 }
 

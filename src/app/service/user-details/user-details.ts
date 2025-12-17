@@ -1,4 +1,5 @@
 import { Injectable, signal } from '@angular/core';
+import { Preferences } from '@capacitor/preferences';
 
 @Injectable({
   providedIn: 'root',
@@ -28,5 +29,23 @@ export class UserDetails {
    */
   hasPrivilege(privilege: string): boolean {
     return this.privileges().includes(privilege);
+  }
+
+  async getPrivileges(): Promise<string[]> {
+    const privileges = await Preferences.get({ key: 'user_privileges' });
+    return privileges.value ? JSON.parse(privileges.value) : [];
+  }
+
+  async punchType(): Promise<'user' | 'admin' | 'location' | ''> {
+    const privileges = await this.getPrivileges();
+    if (privileges.includes('attendance.markAttendanceLocation')) {
+      return 'location';
+    } else if (privileges.includes('attendance.directAttendance')) {
+      return 'admin';
+    } else if (privileges.includes('attendance.markAttendance')) {
+      return 'user';
+    } else {
+      return '';
+    }
   }
 }

@@ -14,6 +14,7 @@ import {
   IonLabel,
   IonItem,
   IonInput,
+  IonSpinner,
   ToastController,
   LoadingController,
 } from '@ionic/angular/standalone';
@@ -29,6 +30,7 @@ import { SearchableDropdownComponent } from 'src/app/common/searchable-dropdown/
 import { StockTransferService } from 'src/app/service/stock-transfer/stock-transfer.service';
 import { AttendanceService } from 'src/app/service/attendance/attendance.service';
 import { StockAvailabilityService } from 'src/app/service/stock-availability/stock-availability.service';
+import { ProductService } from 'src/app/service/product/product.service';
 import { Toast } from 'src/app/service/toast/toast';
 import { Loader } from 'src/app/service/loader/loader';
 
@@ -63,6 +65,7 @@ interface TransferItem {
     IonLabel,
     IonItem,
     IonInput,
+    IonSpinner,
   ],
 })
 export class TransferComponent implements OnInit, ViewWillEnter {
@@ -70,6 +73,7 @@ export class TransferComponent implements OnInit, ViewWillEnter {
   private stockTransferService = inject(StockTransferService);
   private attendanceService = inject(AttendanceService);
   private stockAvailabilityService = inject(StockAvailabilityService);
+  private productService = inject(ProductService);
   private toast = inject(Toast);
   private loader = inject(Loader);
 
@@ -84,8 +88,11 @@ export class TransferComponent implements OnInit, ViewWillEnter {
   transferFromArray: { id: string; text: string }[] = [];
   transferToArray: { id: string; text: string }[] = [];
   stockItemsArray: { id: string; text: string }[] = [];
+  transferFromProducts: any[] = []; // Store products from transfer from customer
+  transferToProducts: any[] = []; // Store products from transfer to customer
   previousTransfers: any[] = [];
   isLoadingTransfers = false;
+  isLoadingProducts = false;
 
   // Flag to prevent multiple simultaneous API calls
   private isInitializing = false;
@@ -126,7 +133,6 @@ export class TransferComponent implements OnInit, ViewWillEnter {
       await Promise.all([
         this.loadTransferFromCustomers(),
         this.loadTransferToCustomers(),
-        this.loadProducts(),
         this.loadPreviousTransfers(),
       ]);
       this.isDataLoaded = true;
@@ -246,59 +252,173 @@ export class TransferComponent implements OnInit, ViewWillEnter {
     }
   }
 
-  async loadProducts() {
+  async loadProducts(customerId: number, isTransferFrom: boolean = true) {
+    if (!customerId) {
+      if (isTransferFrom) {
+        this.transferFromProducts = [];
+      } else {
+        this.transferToProducts = [];
+      }
+      this.updateCommonProducts();
+      return;
+    }
+
+    this.isLoadingProducts = true;
     try {
-      const response = await this.stockTransferService.getProducts();
+      const response = await this.productService.getCustomerProducts(customerId);
       const responseData = response?.data;
 
       if (responseData?.success && responseData?.data) {
-        this.stockItemsArray = responseData.data.map((product: any) => ({
-          id: String(product.id),
-          text: `${product.name}${
-            product.code ? ' (' + product.code + ')' : ''
-          }${
-            product.size && product.unit
-              ? ' - ' + product.size + ' ' + product.unit
-              : ''
-          }`,
-        }));
+        // Filter only active products
+        const products = responseData.data
+          .filter((cp: any) => cp.status === 'active' && cp.product)
+          .map((cp: any) => cp.product);
+
+        if (isTransferFrom) {
+          this.transferFromProducts = products;
+        } else {
+          this.transferToProducts = products;
+        }
+
+        // Update common products
+        this.updateCommonProducts();
       } else {
-        this.stockItemsArray = [];
+        if (isTransferFrom) {
+          this.transferFromProducts = [];
+        } else {
+          this.transferToProducts = [];
+        }
+        this.updateCommonProducts();
       }
     } catch (error: any) {
-      console.error('Error loading products:', error);
-      this.stockItemsArray = [];
+      console.error('Error loading customer products:', error);
+      if (isTransferFrom) {
+        this.transferFromProducts = [];
+      } else {
+        this.transferToProducts = [];
+      }
+      this.updateCommonProducts();
       // Auth errors are handled by interceptor
       if (error?.status !== 401 && error?.status !== 403) {
         await this.toast.showFailure(
           'Error loading products. Please try again.'
         );
       }
+    } finally {
+      this.isLoadingProducts = false;
     }
+  }
+
+  /**
+   * Update stock items array with common products between transfer from and transfer to customers
+   */
+  updateCommonProducts() {
+    // If both customers are selected, show only common products
+    if (this.selectedTransferFrom && this.selectedTransferTo) {
+      // Find products that exist in both lists (by product ID)
+      const commonProducts = this.transferFromProducts.filter((fromProduct: any) =>
+        this.transferToProducts.some((toProduct: any) => toProduct.id === fromProduct.id)
+      );
+
+      // Map to dropdown format
+      this.stockItemsArray = commonProducts.map((product: any) => ({
+        id: String(product.id),
+        text: `${product.name || product.code || 'Unknown Product'}${
+          product.code ? ' (' + product.code + ')' : ''
+        }${
+          product.size && product.unit
+            ? ' - ' + product.size + ' ' + product.unit
+            : ''
+        }`,
+      }));
+    } else if (this.selectedTransferFrom) {
+      // If only transfer from is selected, show its products
+      this.stockItemsArray = this.transferFromProducts.map((product: any) => ({
+        id: String(product.id),
+        text: `${product.name || product.code || 'Unknown Product'}${
+          product.code ? ' (' + product.code + ')' : ''
+        }${
+          product.size && product.unit
+            ? ' - ' + product.size + ' ' + product.unit
+            : ''
+        }`,
+      }));
+    } else {
+      // No customer selected, clear products
+      this.stockItemsArray = [];
+    }
+  }
+
+  /**
+   * Get placeholder text for stock item dropdown
+   */
+  getStockItemPlaceholder(): string {
+    if (!this.selectedTransferFrom) {
+      return 'Select Transfer From first';
+    }
+    if (!this.selectedTransferTo) {
+      return 'Select Transfer To to see common products';
+    }
+    if (this.stockItemsArray.length === 0) {
+      return 'No common products available';
+    }
+    return 'Select Stock Item';
   }
 
   async onTransferFromSelect(item: any) {
     this.selectedTransferFrom = item;
-    // Reload stock availability if product is already selected
-    if (this.selectedStockItem) {
-      await this.loadStockAvailability();
+    
+    // Clear previous stock items and selected stock item
+    this.selectedStockItem = null;
+    this.quantity = null;
+    this.currentAvailableQty = null;
+    this.productUnit = '';
+
+    // Load products for the selected customer
+    if (item && item.id) {
+      const customerId = parseInt(item.id);
+      await this.loadProducts(customerId, true);
     } else {
-      // Reset quantity and availability if no product selected
-      this.quantity = null;
-      this.currentAvailableQty = null;
-      this.productUnit = '';
+      this.transferFromProducts = [];
+      this.updateCommonProducts();
     }
   }
 
-  onTransferToSelect(item: any) {
+  async onTransferToSelect(item: any) {
     this.selectedTransferTo = item;
+    
     // Validate that transfer from and to are different
     if (
       this.selectedTransferFrom &&
       this.selectedTransferFrom.id === this.selectedTransferTo.id
     ) {
-      this.toast.showWarning('Transfer from and transfer to must be different');
+      await this.toast.showWarning('Transfer from and transfer to must be different');
       this.selectedTransferTo = null;
+      this.transferToProducts = [];
+      this.updateCommonProducts();
+      return;
+    }
+
+    // Clear selected stock item if it's no longer in common products
+    if (this.selectedStockItem) {
+      const isStillAvailable = this.stockItemsArray.some(
+        (item) => item.id === this.selectedStockItem.id
+      );
+      if (!isStillAvailable) {
+        this.selectedStockItem = null;
+        this.quantity = null;
+        this.currentAvailableQty = null;
+        this.productUnit = '';
+      }
+    }
+
+    // Load products for the selected customer
+    if (item && item.id) {
+      const customerId = parseInt(item.id);
+      await this.loadProducts(customerId, false);
+    } else {
+      this.transferToProducts = [];
+      this.updateCommonProducts();
     }
   }
 

@@ -1,0 +1,173 @@
+<ion-content [fullscreen]="true" class="machine-readings-content">
+  <div class="container">
+    <!-- Selection Section -->
+    <ion-card class="selection-card">
+      <ion-card-content>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="12">
+              <ion-text class="section-title">
+                <h3>Selection</h3>
+              </ion-text>
+            </ion-col>
+          </ion-row>
+
+          <!-- Customer Selection -->
+          <ion-row>
+            <ion-col size="12">
+              <app-searchable-dropdown
+                [itemIdField]="'id'"
+                [placeholder]="'Select Customer'"
+                [label]="'Customer *'"
+                [items]="customerItems"
+                itemValueField="id"
+                itemTextField="text"
+                (selectionChange)="onCustomerChange($event)">
+              </app-searchable-dropdown>
+            </ion-col>
+          </ion-row>
+
+          <!-- Machine Selection -->
+          <ion-row>
+            <ion-col size="12">
+              <app-searchable-dropdown
+                *ngIf="selectedCustomerId && machines.length > 0"
+                [itemIdField]="'id'"
+                [placeholder]="'Select Machine'"
+                [label]="'Machine *'"
+                [items]="machineItems"
+                itemValueField="id"
+                itemTextField="text"
+                (selectionChange)="onMachineChange($event)">
+              </app-searchable-dropdown>
+              <ion-text *ngIf="selectedCustomerId && machines.length === 0" color="warning" class="warning-text">
+                No machines assigned to this customer.
+              </ion-text>
+              <ion-text *ngIf="!selectedCustomerId" color="medium" class="info-text">
+                Please select a customer first.
+              </ion-text>
+            </ion-col>
+          </ion-row>
+
+          <!-- Reading Date -->
+          <ion-row>
+            <ion-col size="12">
+              <ion-item class="date-item" lines="none">
+                <ion-label position="stacked">Reading Date *</ion-label>
+                <ion-input
+                  type="date"
+                  [formControl]="readingDateControl"
+                  (ionChange)="onDateChange()">
+                </ion-input>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Machine Reading Fields Section -->
+    <ion-card *ngIf="selectedMachine && readingFields.length > 0" class="readings-card">
+      <ion-card-content>
+        <ion-text class="section-title">
+          <h3>
+            <span *ngIf="selectedMachine.machine_type === 'automatic_live'">Live Machine</span>
+            <span *ngIf="selectedMachine.machine_type === 'automatic_bean_to_cup'">Bean to Cup Machine</span>
+            <span *ngIf="!selectedMachine.machine_type || selectedMachine.machine_type === ''">Machine</span>
+            - Machine Reading
+          </h3>
+        </ion-text>
+
+        <ion-grid>
+          <ion-row>
+            <ion-col size="12" size-md="6" *ngFor="let field of readingFields; let i = index">
+              <ion-card class="reading-item-card">
+                <ion-card-content>
+                  <div class="reading-header">
+                    <div class="reading-icon">
+                      <ion-img [src]="field.image" [alt]="field.label"></ion-img>
+                    </div>
+                    <ion-text class="reading-title">
+                      <h4>{{ field.label }}</h4>
+                    </ion-text>
+                  </div>
+
+                  <div class="reading-body">
+                    <ion-item class="reading-input-item" lines="none">
+                      <ion-label position="stacked">Reading Value</ion-label>
+                      <ion-input
+                        type="number"
+                        [formControl]="getFieldControl(field.key)"
+                        placeholder="0"
+                        min="0"
+                        step="1">
+                      </ion-input>
+                    </ion-item>
+
+                    <ion-item class="notes-input-item" lines="none">
+                      <ion-label position="stacked">Notes (optional)</ion-label>
+                      <ion-input
+                        type="text"
+                        [formControl]="getFieldNotesControl(field.key)"
+                        placeholder="Add notes...">
+                      </ion-input>
+                    </ion-item>
+                  </div>
+                </ion-card-content>
+              </ion-card>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- No Machine Selected Message -->
+    <ion-card *ngIf="selectedCustomerId && !selectedMachineId" class="info-card">
+      <ion-card-content>
+        <ion-text color="primary">
+          <p>Please select a machine to enter readings.</p>
+        </ion-text>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Manual Machine Error Message -->
+    <ion-card *ngIf="selectedMachine && selectedMachine.machine_type === 'semi_automatic_or_manual'" class="error-card">
+      <ion-card-content>
+        <ion-text color="danger">
+          <p><strong>Manual Machine:</strong> No reading available for this machine type.</p>
+        </ion-text>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- No Machine Type Error Message -->
+    <ion-card *ngIf="selectedMachine && (!selectedMachine.machine_type || selectedMachine.machine_type === '' || selectedMachine.machine_type === null)" class="error-card">
+      <ion-card-content>
+        <ion-text color="danger">
+          <p><strong>No Machine Type:</strong> No reading available for this machine. Please set the machine type first.</p>
+        </ion-text>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Form Actions -->
+    <div *ngIf="selectedMachine && readingFields.length > 0 && selectedMachine.machine_type && selectedMachine.machine_type !== 'semi_automatic_or_manual'" class="action-buttons">
+      <ion-button
+        expand="block"
+        fill="outline"
+        color="medium"
+        (click)="resetForm()"
+        [disabled]="submitting">
+        <ion-icon slot="start" name="refresh-outline"></ion-icon>
+        Reset
+      </ion-button>
+
+      <ion-button
+        expand="block"
+        color="primary"
+        (click)="onSubmit()"
+        [disabled]="submitting || readingForm.invalid">
+        <ion-icon slot="start" name="save-outline"></ion-icon>
+        {{ submitting ? 'Saving...' : 'Save Readings' }}
+      </ion-button>
+    </div>
+  </div>
+</ion-content>

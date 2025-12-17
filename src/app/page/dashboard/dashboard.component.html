@@ -19,7 +19,7 @@
         </ion-row>
 
         <!-- Customer Selection Section -->
-        @if (hasAssignedCustomers && hasMarkAttendancePrivilege) {
+        @if (hasAssignedCustomers && hasMarkAttendancePrivilege && isUser === 'user') {
         <ion-row class="customer-row">
           <ion-col size="12">
             <div class="customer-select-wrapper">
@@ -27,17 +27,20 @@
                 <ion-label position="stacked" class="customer-label">Select Customer</ion-label>
                 <ion-select [(ngModel)]="selectedCustomerId" placeholder="Select Customer" interface="action-sheet"
                   class="customer-select" [disabled]="isPunchedIn" (ionChange)="onCustomerChange($event)">
-                  <ion-select-option *ngFor="let customer of customers" [value]="customer.id">
+                  @for (customer of customers; track $index) {
+                  <ion-select-option [value]="customer.id">
                     {{ customer.name }}
                   </ion-select-option>
+                  }
                 </ion-select>
               </ion-item>
-              <div class="selected-customer-info"
-                *ngIf="attendance && attendance.customerName && attendance.punchOutTime">
+              @if (attendance && attendance.customerName && attendance.punchOutTime) {
+              <div class="selected-customer-info">
                 <ion-text color="primary">
                   <span class="customer-name-text">Completed: {{ attendance.customerName }}</span>
                 </ion-text>
               </div>
+              }
             </div>
           </ion-col>
         </ion-row>
@@ -45,7 +48,7 @@
 
         <!-- No Customer Assigned Message -->
         @if (!hasAssignedCustomers) {
-        <ion-row class="customer-row" *ngIf="">
+        <ion-row class="customer-row">
           <ion-col size="12">
             <div class="no-customer-message">
               <ion-text color="warning">
@@ -53,6 +56,38 @@
                   <ion-icon name="information-circle-outline"
                     style="vertical-align: middle; margin-right: 8px;"></ion-icon>
                   Please contact admin to assign customer name to your account.
+                </p>
+              </ion-text>
+            </div>
+          </ion-col>
+        </ion-row>
+        }
+
+        @if (isUser === 'location') {
+           <ion-row class="customer-row">
+          <ion-col size="12">
+            <div class="no-customer-message">
+              <ion-text color="warning">
+                <p class="message-text">
+                  <ion-icon name="information-circle-outline"
+                    style="vertical-align: middle; margin-right: 8px;"></ion-icon>
+                  Location based punch in/ punch out enabled.
+                </p>
+              </ion-text>
+            </div>
+          </ion-col>
+        </ion-row>
+        }
+
+        @if (isUser === 'admin') {
+           <ion-row class="customer-row">
+          <ion-col size="12">
+            <div class="no-customer-message">
+              <ion-text color="warning">
+                <p class="message-text">
+                  <ion-icon name="information-circle-outline"
+                    style="vertical-align: middle; margin-right: 8px;"></ion-icon>
+                  Admin user - No customer selection required.
                 </p>
               </ion-text>
             </div>

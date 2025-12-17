@@ -9,6 +9,13 @@ export interface PunchInRequest {
   selfie_image?: string; // Base64 encoded image
 }
 
+export interface LocationPunchInRequest {
+  action: "punch_in" | "punch_out",
+  latitude: number,
+  longitude: number,
+  type: "location",// Base64 encoded image
+}
+
 export interface PunchOutRequest {
   selfie_image?: string; // Base64 encoded image
 }
@@ -35,7 +42,7 @@ export interface AttendanceRecord {
 })
 export class AttendanceService {
   private authInterceptor = inject(AuthInterceptor);
-  
+
   private async getAuthToken(): Promise<string | null> {
     const token = await Preferences.get({ key: 'auth_token' });
     return token.value;
@@ -46,11 +53,11 @@ export class AttendanceService {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json'
     };
-    
+
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
-    
+
     return headers;
   }
 
@@ -60,14 +67,31 @@ export class AttendanceService {
   async punchIn(request: PunchInRequest): Promise<any> {
     const headers = await this.getAuthHeaders();
     const url = `${environment.baseURL}/api/attendance/punch-in`;
-    
+
     const options: HttpOptions = {
       url: url,
       data: request,
       headers: headers,
       responseType: 'json'
     };
-    
+
+    return this.authInterceptor.post(options);
+  }
+
+    /**
+   * Location Punch In - Create attendance record
+   */
+  async locationpunch(request: LocationPunchInRequest): Promise<any> {
+    const headers = await this.getAuthHeaders();
+    const url = `${environment.baseURL}/api/attendance/location-punch`;
+
+    const options: HttpOptions = {
+      url: url,
+      data: request,
+      headers: headers,
+      responseType: 'json'
+    };
+
     return this.authInterceptor.post(options);
   }
 
@@ -77,14 +101,14 @@ export class AttendanceService {
   async punchOut(request: PunchOutRequest = {}): Promise<any> {
     const headers = await this.getAuthHeaders();
     const url = `${environment.baseURL}/api/attendance/punch-out`;
-    
+
     const options: HttpOptions = {
       url: url,
       data: request,
       headers: headers,
       responseType: 'json'
     };
-    
+
     return this.authInterceptor.post(options);
   }
 
@@ -94,13 +118,13 @@ export class AttendanceService {
   async getTodayAttendance(): Promise<any> {
     const headers = await this.getAuthHeaders();
     const url = `${environment.baseURL}/api/attendance/today`;
-    
+
     const options: HttpOptions = {
       url: url,
       headers: headers,
       responseType: 'json'
     };
-    
+
     return this.authInterceptor.get(options);
   }
 
@@ -111,7 +135,7 @@ export class AttendanceService {
   async getMyAttendance(dateFrom?: string, dateTo?: string, perPage: number = 30): Promise<any> {
     const headers = await this.getAuthHeaders();
     let url = `${environment.baseURL}/api/attendance/my-attendance?per_page=${perPage}`;
-    
+
     // Only add date parameters if explicitly provided
     // If not provided, API will default to current month
     if (dateFrom) {
@@ -120,13 +144,13 @@ export class AttendanceService {
     if (dateTo) {
       url += `&date_to=${dateTo}`;
     }
-    
+
     const options: HttpOptions = {
       url: url,
       headers: headers,
       responseType: 'json'
     };
-    
+
     return this.authInterceptor.get(options);
   }
 
@@ -136,14 +160,14 @@ export class AttendanceService {
   async getCustomers(): Promise<any> {
     const headers = await this.getAuthHeaders();
     const url = `${environment.baseURL}/api/attendance/customers/list`;
-    
+
     const options: HttpOptions = {
       url: url,
       method: 'GET',
       headers: headers,
       responseType: 'json'
     };
-    
+
     return CapacitorHttp.get(options);
   }
 
@@ -153,13 +177,13 @@ export class AttendanceService {
   async getMyAssignedCustomers(): Promise<any> {
     const headers = await this.getAuthHeaders();
     const url = `${environment.baseURL}/api/attendance/my-assigned-customers`;
-    
+
     const options: HttpOptions = {
       url: url,
       headers: headers,
       responseType: 'json'
     };
-    
+
     return this.authInterceptor.get(options);
   }
 
@@ -169,13 +193,13 @@ export class AttendanceService {
   async getMyAssignedMachines(): Promise<any> {
     const headers = await this.getAuthHeaders();
     const url = `${environment.baseURL}/api/attendance/my-assigned-machines`;
-    
+
     const options: HttpOptions = {
       url: url,
       headers: headers,
       responseType: 'json'
     };
-    
+
     return this.authInterceptor.get(options);
   }
 
@@ -185,13 +209,13 @@ export class AttendanceService {
   async getEmployees(): Promise<any> {
     const headers = await this.getAuthHeaders();
     const url = `${environment.baseURL}/api/attendance/employees/list`;
-    
+
     const options: HttpOptions = {
       url: url,
       headers: headers,
       responseType: 'json'
     };
-    
+
     return this.authInterceptor.get(options);
   }
 }

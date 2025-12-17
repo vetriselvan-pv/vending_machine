@@ -45,15 +45,28 @@
           <!-- Stock Items -->
           <ion-row>
             <ion-col size="12">
-              <app-searchable-dropdown
-                [itemIdField]="'id'"
-                [placeholder]="'Select Stock Item'"
-                [label]="'Stock Item'"
-                [items]="stockItemsArray"
-                itemValueField="id"
-                itemTextField="text"
-                (selectionChange)="onStockItemSelect($event)">
-              </app-searchable-dropdown>
+              @if(isLoadingProducts) {
+                <div style="display: flex; align-items: center; gap: 8px; padding: 16px; justify-content: center;">
+                  <ion-spinner name="crescent" style="--color: var(--ion-color-primary);"></ion-spinner>
+                  <ion-text style="font-size: 0.9rem; color: var(--ion-color-primary);">Loading products...</ion-text>
+                </div>
+              } @else if(selectedTransferFrom && selectedTransferTo && stockItemsArray.length === 0) {
+                <div style="padding: 16px; text-align: center;">
+                  <ion-text color="warning" style="font-size: 0.9rem;">
+                    No common products found between the selected customers. Please select different customers.
+                  </ion-text>
+                </div>
+              } @else {
+                <app-searchable-dropdown
+                  [itemIdField]="'id'"
+                  [placeholder]="getStockItemPlaceholder()"
+                  [label]="'Stock Item'"
+                  [items]="stockItemsArray"
+                  itemValueField="id"
+                  itemTextField="text"
+                  (selectionChange)="onStockItemSelect($event)">
+                </app-searchable-dropdown>
+              }
             </ion-col>
           </ion-row>
 

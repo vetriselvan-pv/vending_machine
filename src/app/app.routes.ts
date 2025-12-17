@@ -63,6 +63,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./page/about/about.component').then((m) => m.AboutComponent),
       },
+      {
+        path: 'machine-readings',
+        loadComponent: () =>
+          import('./page/machine-readings/machine-readings.component').then(
+            (m) => m.MachineReadingsComponent
+          ),
+      },
     ],
   },
   {
@@ -89,6 +96,7 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./page/login/login.component').then((m) => m.LoginComponent),
   },
+
   // {
   //   path: '',
   //   pathMatch: 'full',
