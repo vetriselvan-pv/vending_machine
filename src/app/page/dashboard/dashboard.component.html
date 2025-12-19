@@ -96,20 +96,71 @@
         }
 
         <!-- Punch Section -->
-        @if (hasAssignedCustomers && hasMarkAttendancePrivilege) {
+        @if (hasMarkAttendancePrivilege && (hasAssignedCustomers || isUser === 'admin' || isUser === 'location')) {
         <ion-row class="punch-row">
           <ion-col size="12" class="btn-content-col">
             <div class="btn-content">
               <ion-button id="punch-in" color="primary" (click)="punchIn()" class="punch-btn punch-in-btn"
-                [disabled]="isPunchedIn || !selectedCustomerId || (attendance && attendance.punchOutTime)">
+                [disabled]="hasPendingPunchIn || (isUser === 'user' && !selectedCustomerId)">
                 Punch in
               </ion-button>
-              <ion-button id="punch-out" color="primary" (click)="punchOut()" class="punch-btn punch-out-btn"
-                [disabled]="!isPunchedIn || (attendance && attendance.punchOutTime)">
+              <ion-button id="punch-out" color="primary" (click)="punchOut()" class="punch-btn punch-out-btn">
                 Punch out
               </ion-button>
             </div>
           </ion-col>
+        </ion-row>
+        
+        <!-- Multiple Attendance Records -->
+        @if (attendanceRecords.length > 0) {
+        <ion-row class="attendance-records-row">
+          <ion-col size="12">
+            <div class="attendance-records-container">
+              @for (record of attendanceRecords; track record.id) {
+              <ion-card class="punch-details-card attendance-record-card">
+                <ion-card-content>
+                  <div class="punch-details">
+                    <!-- Date Display -->
+                    <div class="date-text">
+                      <ion-text color="secondary">
+                        <span class="date-label">{{ getCurrentDate() }}</span>
+                      </ion-text>
+                    </div>
+
+                    <!-- Attendance Info -->
+                    <div class="attendance-info">
+                      <div class="customer-section" *ngIf="record.customerName">
+                        <div class="customer-label-small">Customer</div>
+                        <div class="customer-value">{{ record.customerName }}</div>
+                      </div>
+
+                      <div class="time-section" *ngIf="record.punchInTime">
+                        <div class="time-label">Punch In Time</div>
+                        <div class="time-value">{{ record.punchInTime }}</div>
+                      </div>
+
+                      <div class="time-section" *ngIf="record.punchOutTime">
+                        <div class="time-label">Punch Out Time</div>
+                        <div class="time-value">{{ record.punchOutTime }}</div>
+                      </div>
+
+                      <div class="time-section" *ngIf="!record.punchOutTime && record.id === attendance?.id">
+                        <div class="current-time">
+                          <div class="current-time-label">Current Time</div>
+                          <div class="current-time-value">{{ getCurrentTime() }}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </ion-card-content>
+              </ion-card>
+              }
+            </div>
+          </ion-col>
+        </ion-row>
+        } @else {
+        <!-- Single Attendance Record (Old Structure) or No Records -->
+        <ion-row class="attendance-records-row">
           <ion-col size="6" class="details-col">
             <ion-card class="punch-details-card">
               <ion-card-content>
@@ -155,6 +206,7 @@
             </ion-card>
           </ion-col>
         </ion-row>
+        }
         }
       </ion-grid>
     </ion-card-content>

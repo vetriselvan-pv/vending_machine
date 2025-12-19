@@ -94,7 +94,9 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
   toDate = new Date();
   isPunchedIn = false;
+  hasPendingPunchIn = false; // Track if there's a pending punch-in (in_time without out_time)
   attendance: AttendanceRecord | null = null;
+  attendanceRecords: AttendanceRecord[] = []; // Array to store all attendance records for today
   currentTime = new Date();
   selectedCustomerId: number | null = null;
   loading = false;
@@ -172,10 +174,11 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         }
       }
 
-      // Check for mark attendance privilege (format: "attendance.markAttendance")
-      this.hasMarkAttendancePrivilege = this.userDetails.hasPrivilege(
-        'attendance.markAttendance'
-      );
+      // Check for any attendance privilege (selfie attendance, direct attendance, or location attendance)
+      this.hasMarkAttendancePrivilege = 
+        this.userDetails.hasPrivilege('attendance.markAttendance') ||
+        this.userDetails.hasPrivilege('attendance.directAttendance') ||
+        this.userDetails.hasPrivilege('attendance.markAttendanceLocation');
     } catch (error) {
       console.error('Error checking privileges:', error);
       this.hasMarkAttendancePrivilege = false;
@@ -326,36 +329,117 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   async loadTodayAttendance() {
     try {
       const response = await this.attendanceService.getTodayAttendance();
-      if (response?.data?.success && response.data.data) {
-        const attendanceData = response.data.data;
-        this.attendance = {
-          id: attendanceData.id,
-          date: attendanceData.date,
-          customerId: attendanceData.customer_id,
-          customer: attendanceData.customer,
-          customerName:
-            attendanceData.customer?.company_name ||
-            attendanceData.customer?.name,
-          in_time: attendanceData.in_time,
-          punchInTime: this.formatTime(attendanceData.in_time),
-          out_time: attendanceData.out_time,
-          punchOutTime: attendanceData.out_time
-            ? this.formatTime(attendanceData.out_time)
-            : undefined,
-          selfie_image: attendanceData.selfie_image,
-        };
+      // Check if response is successful
+      if (response?.data?.success) {
+        // Handle new response structure with records array
+        const records = response.data.records || [];
+        
+        // Also check for old structure with data object (backward compatibility)
+        let attendanceData = response.data.data;
+        
+        // Process all records if records array exists
+        if (records && records.length > 0) {
+          // Sort by created_at descending (newest first)
+          const sortedRecords = [...records].sort((a: any, b: any) => {
+            const dateA = new Date(a.created_at || a.updated_at || 0);
+            const dateB = new Date(b.created_at || b.updated_at || 0);
+            return dateB.getTime() - dateA.getTime();
+          });
+          
+          // Convert all records to AttendanceRecord format
+          this.attendanceRecords = sortedRecords.map((record: any) => ({
+            id: record.id,
+            date: record.date,
+            customerId: record.customer_id,
+            customer: record.customer,
+            customerName:
+              record.customer?.company_name ||
+              record.customer?.name,
+            in_time: record.in_time,
+            punchInTime: this.formatTime(record.in_time),
+            out_time: record.out_time,
+            punchOutTime: record.out_time
+              ? this.formatTime(record.out_time)
+              : undefined,
+            selfie_image: record.selfie_image,
+          }));
+          
+          // Check if there's any pending punch-in (record with in_time but no out_time)
+          this.hasPendingPunchIn = sortedRecords.some((record: any) => 
+            record.in_time && !record.out_time
+          );
+          
+          // Use the latest record for determining punch-in status
+          attendanceData = sortedRecords[0];
+        } else if (attendanceData) {
+          // Handle old structure - single record
+          this.attendanceRecords = [{
+            id: attendanceData.id,
+            date: attendanceData.date,
+            customerId: attendanceData.customer_id,
+            customer: attendanceData.customer,
+            customerName:
+              attendanceData.customer?.company_name ||
+              attendanceData.customer?.name,
+            in_time: attendanceData.in_time,
+            punchInTime: this.formatTime(attendanceData.in_time),
+            out_time: attendanceData.out_time,
+            punchOutTime: attendanceData.out_time
+              ? this.formatTime(attendanceData.out_time)
+              : undefined,
+            selfie_image: attendanceData.selfie_image,
+          }];
+          
+          // Check if there's a pending punch-in
+          this.hasPendingPunchIn = attendanceData.in_time && !attendanceData.out_time;
+        } else {
+          this.attendanceRecords = [];
+          this.hasPendingPunchIn = false;
+        }
+        
+        // Process latest attendance data for punch-in status
+        if (attendanceData) {
+          this.attendance = {
+            id: attendanceData.id,
+            date: attendanceData.date,
+            customerId: attendanceData.customer_id,
+            customer: attendanceData.customer,
+            customerName:
+              attendanceData.customer?.company_name ||
+              attendanceData.customer?.name,
+            in_time: attendanceData.in_time,
+            punchInTime: this.formatTime(attendanceData.in_time),
+            out_time: attendanceData.out_time,
+            punchOutTime: attendanceData.out_time
+              ? this.formatTime(attendanceData.out_time)
+              : undefined,
+            selfie_image: attendanceData.selfie_image,
+          };
 
-        this.selectedCustomerId = attendanceData.customer_id;
-        this.isPunchedIn = !attendanceData.out_time; // Punched in if no out_time
+          this.selectedCustomerId = attendanceData.customer_id;
+          // Punched in if latest record has no out_time
+          this.isPunchedIn = !attendanceData.out_time;
+        } else {
+          // No attendance record for today - user can punch in
+          this.attendance = null;
+          this.attendanceRecords = [];
+          this.isPunchedIn = false;
+          this.hasPendingPunchIn = false;
+        }
       } else {
+        // No attendance record for today - user can punch in
         this.attendance = null;
+        this.attendanceRecords = [];
         this.isPunchedIn = false;
+        this.hasPendingPunchIn = false;
       }
     } catch (error: any) {
       console.error("Error loading today's attendance:", error);
       // Auth errors are handled by interceptor
       this.attendance = null;
+      this.attendanceRecords = [];
       this.isPunchedIn = false;
+      this.hasPendingPunchIn = false;
     }
   }
 
@@ -376,7 +460,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   }
 
   async punchIn() {
-    // Check if customer is selected
+    // Check if customer is selected (only for user type)
     const loginType = await this.userDetails.punchType();
 
     if (loginType === 'user' && !this.selectedCustomerId) {
@@ -384,10 +468,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    if (this.isPunchedIn) {
-      this.toast.showWarning('You have already punched in today');
-      return;
-    }
+    // Allow multiple punch in/out - backend will handle validation and return errors if needed
 
     if (loginType === 'user') {
       await this.loader.show('Processing...', 'punchIn');
@@ -531,10 +612,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   }
 
   async punchOut() {
-    if (!this.isPunchedIn) {
-      this.toast.showWarning('You have not punched in today');
-      return;
-    }
+    // Allow multiple punch in/out - backend will handle validation and return errors if needed
     await this.loader.show('Processing...', 'punchOut');
     const loginType = await this.userDetails.punchType();
     if (loginType === 'user') {

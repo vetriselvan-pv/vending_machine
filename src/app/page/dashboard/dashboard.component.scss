@@ -361,6 +361,28 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, .08)
 }
 
+.attendance-records-row {
+  margin-top: 1rem;
+}
+
+.attendance-records-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  width: 100%;
+}
+
+@media(max-width: 480px) {
+  .attendance-records-container {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}
+
+.attendance-record-card {
+  margin: 0;
+}
+
 .punch-details-card ion-card-content {
   padding: 1.25rem;
   height: 100%;
